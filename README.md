@@ -23,9 +23,10 @@ cd nore-proxy
 pip install -r requirements.txt
 ```
 
-3. Configure environment and edit .env with your actual values:
+3. Configure environment/models and edit .env/models with your actual values:
 ```bash
 copy .env.example .env
+copy allowed_models.txt.example allowed_models.txt
 ```
 
 4. Run the server:

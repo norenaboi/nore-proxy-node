@@ -276,7 +276,10 @@ class APIKeyManager:
     
     def get_key_name(self, api_key: str) -> str:
         """Get the friendly name for an API key"""
-        return self.keys[api_key]['name']
+        if self.validate_key(api_key):
+            return self.keys[api_key]['name']
+        else:
+            return "Unknown"
     
     def reload_keys(self):
         """Reload keys from file (useful for runtime updates)"""
@@ -759,18 +762,34 @@ def log_error(request_id: str, error_type: str, error_message: str, stack_trace:
    
     log_manager.write_error_log(error_data)
 
-# --- Model Registry ---
+# --- Model Registry and Mapping ---
+MODEL_ALIASES = {}
 MODEL_REGISTRY = {}  # Will be populated dynamically
+
+def resolve_model_name(model_name: str) -> str:
+    """Resolve alias to actual model name"""
+    return MODEL_ALIASES.get(model_name, model_name)
 
 def load_models_from_file():
     """Load models from allowed_models.txt into MODEL_REGISTRY"""
     global MODEL_REGISTRY
+    global MODEL_ALIASES
     
     try:
-        with open("allowed_models.txt", "r") as f:
+        with open("allowed_models.txt", "r", encoding="utf-8") as f:
             for line in f:
-                model_name = line.strip()
-                if model_name and not model_name.startswith('#'):
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    # Check for alias mapping (alias:actual_name)
+                    if ':' in line:
+                        alias, actual_name = line.split(':', 1)
+                        alias = alias.strip()
+                        actual_name = actual_name.strip()
+                        MODEL_ALIASES[alias] = actual_name
+                        model_name = alias  # Use alias as the display name
+                    else:
+                        model_name = line
+                    
                     MODEL_REGISTRY[model_name] = {
                         "type": "chat",
                         "capabilities": {
@@ -778,6 +797,8 @@ def load_models_from_file():
                         }
                     }
         logging.info(f"Loaded {len(MODEL_REGISTRY)} models from allowed_models.txt")
+        if MODEL_ALIASES:
+            logging.info(f"Loaded {len(MODEL_ALIASES)} model aliases")
     except FileNotFoundError:
         logging.warning("allowed_models.txt not found")
 
@@ -914,7 +935,8 @@ def get_endpoint_for_model(model_name: str) -> tuple[str, str, str] | None:
     """
     # Check for -v{n} suffix pattern
     import re
-    match = re.search(r'-v(\d+)$', model_name)
+    actual_model_name = resolve_model_name(model_name)
+    match = re.search(r'-v(\d+)$', actual_model_name)
     
     if match:
         version = match.group(1)
@@ -922,7 +944,7 @@ def get_endpoint_for_model(model_name: str) -> tuple[str, str, str] | None:
         
         if endpoint_key in Config.ENDPOINTS:
             endpoint = Config.ENDPOINTS[endpoint_key]
-            actual_model = model_name.rsplit(f'-v{version}', 1)[0]
+            actual_model = actual_model_name.rsplit(f'-v{version}', 1)[0]
             return (endpoint["url"], endpoint["token"], actual_model)
     
     return None
@@ -954,6 +976,10 @@ async def stream_from_backend(
 
     backend_url, backend_token, actual_model = endpoint_info
     backend_url = backend_url + "/chat/completions"
+
+    logging.info(f"Request model: {model_name}")
+    logging.info(f"Actual model: {actual_model}")
+    logging.info(f"Endpoint URL: {backend_url}")
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -1073,6 +1099,10 @@ async def make_backend_request(
 
     backend_url, backend_token, actual_model = endpoint_info
     backend_url = backend_url + "/chat/completions"
+
+    logging.info(f"Request model: {model_name}")
+    logging.info(f"Actual model: {actual_model}")
+    logging.info(f"Endpoint URL: {backend_url}")
 
     try:
         async with aiohttp.ClientSession() as session:
@@ -1201,17 +1231,29 @@ async def get_models():
     """Lists available models from a text file in an OpenAI-compatible format."""  
       
     models_data = []
+    model_aliases = {}  # Store alias -> actual_name mapping
+    
     try:  
-        with open("allowed_models.txt", "r") as f:  
+        with open("allowed_models.txt", "r", encoding="utf-8") as f:
             for line in f:
-                model_name = line.strip()
-                if model_name and not model_name.startswith('#'):
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    # Check for alias mapping (using ":" or "=")
+                    if ':' in line:
+                        alias, actual_name = line.split(':', 1)
+                        alias = alias.strip()
+                        actual_name = actual_name.strip()
+                        model_aliases[alias] = actual_name
+                        display_name = alias  # Show the clean alias to users
+                    else:
+                        display_name = line
+                        
                     models_data.append({  
-                        "id": model_name,  
+                        "id": display_name,  
                         "object": "model",  
                         "created": int(time.time()),  
-                        "owned_by": "unified_api",  
-                        "type": "chat"  # Default to chat type
+                        "owned_by": "kratos",  
+                        "type": "chat"
                     })
     except FileNotFoundError:  
         # If no file exists, return models from registry
@@ -1220,7 +1262,7 @@ async def get_models():
                 "id": model_name,  
                 "object": "model",  
                 "created": int(time.time()),  
-                "owned_by": "unified_api",  
+                "owned_by": "kratos",  
                 "type": model_info.get("type", "chat")  
             })
       

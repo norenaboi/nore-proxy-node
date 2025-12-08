@@ -9,6 +9,7 @@ A unified OpenAI API proxy server built with FastAPI.
 - Rate limiting (RPD/RPM)
 - Request logging
 - Prometheus metrics
+- Model mapping
 
 ## Installation
 

@@ -1,2 +1,5 @@
 # Models should be added with the correct "-vX" suffix according to how they are configured in .env
 # Ex: claude-sonnet-4-5-20250929-v1
+# To use model mapping, format your model names like the example below:
+# {public_model_name}:{backend_model_name}
+# claude-opus-4-5:claude-opus-4-5-20251101-v1

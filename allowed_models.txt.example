@@ -1,0 +1,2 @@
+# Models should be added with the correct "-vX" suffix according to how they are configured in .env
+# Ex: claude-sonnet-4-5-20250929-v1

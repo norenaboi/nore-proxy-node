@@ -1,0 +1,15 @@
+# Environment variables
+.env
+allowed_models.txt
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# API keys storage
+api_keys.json
+
+#Logs
+logs/

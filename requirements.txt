@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+starlette
+aiohttp
+requests
+python-dotenv
+prometheus-client

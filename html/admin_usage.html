@@ -1,0 +1,773 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Usage Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #a5b4fc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e1b4b;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+            --card-shadow-hover: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--gray-300);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 260px;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--gray-400);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .logout {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--danger);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: rgba(239, 68, 68, 0.1);
+            font-size: 14px;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .logout svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        h1 {
+            color: var(--gray-900);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--card-shadow-hover);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .summary-card h3 {
+            color: var(--gray-500);
+            font-size: 13px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-100);
+        }
+
+        .card-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--gray-500);
+        }
+
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gray-900);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .card-trend {
+            font-size: 13px;
+            color: var(--gray-400);
+        }
+
+        .card-trend.up {
+            color: var(--success);
+        }
+
+        .card-trend.down {
+            color: var(--danger);
+        }
+
+        /* Tables Container */
+        .tables-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-header h2 svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--primary);
+        }
+
+        .badge {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--gray-50);
+            padding: 14px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 14px;
+            color: var(--gray-700);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: var(--gray-50);
+        }
+
+        .api-key {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: linear-gradient(135deg, var(--gray-100), var(--gray-50));
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+        }
+
+        .name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .name-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .name-text {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .model-badge {
+            background: linear-gradient(135deg, #ddd6fe, #ede9fe);
+            color: #7c3aed;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .timestamp {
+            color: var(--gray-500);
+            font-size: 13px;
+        }
+
+        .duration-badge {
+            background: var(--gray-100);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--gray-600);
+        }
+
+        .token-value {
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .token-value.input {
+            color: var(--primary);
+        }
+
+        .token-value.output {
+            color: var(--success);
+        }
+
+        /* Loading & Error States */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px;
+            color: var(--gray-600);
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--gray-200);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: white;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .error svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            .main-content {
+                padding: 20px;
+            }
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--gray-400);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--gray-400);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            fill: var(--gray-300);
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fa-brands fa-square-web-awesome-stroke"></i>
+            </div>
+            <span class="logo-text">API Admin</span>
+        </div>
+        
+        <nav class="nav-menu">
+            <a class="nav-item active">
+                <i class="fa-brands fa-quinscape"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" href="/admin/manager">
+                <i class="fa-solid fa-key"></i>
+                <span>API Keys</span>
+            </a>
+        </nav>
+        
+        <button class="logout" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+        </button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <span>Loading dashboard data...</span>
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            <span id="errorText">Error message here</span>
+        </div>
+        
+        <div id="dashboard" style="display: none;">
+            <header class="header">
+                <h1>API Usage Dashboard</h1>
+            </header>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h3>Total Requests</h3>
+                        <div class="card-icon">
+                            <i class="fa-regular fa-file-lines"></i>
+                        </div>
+                    </div>
+                    <div class="value" id="totalRequests">-</div>
+                    <span class="card-trend">All time</span>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h3>Input Tokens</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        </div>
+                    </div>
+                    <div class="value" id="totalInput">-</div>
+                    <span class="card-trend">All time input</span>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h3>Output Tokens</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </div>
+                    </div>
+                    <div class="value" id="totalOutput">-</div>
+                    <span class="card-trend">All time output</span>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h3>Requests (24h)</h3>
+                        <div class="card-icon">
+                            <i class="fa-regular fa-file-lines"></i>
+                        </div>
+                    </div>
+                    <div class="value" id="dailyRequests">-</div>
+                    <span class="card-trend">Last 24 hours</span>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h3>Input Tokens (24h)</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        </div>
+                    </div>
+                    <div class="value" id="dailyInput">-</div>
+                    <span class="card-trend">Today's input</span>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-header">
+                        <h3>Output Tokens (24h)</h3>
+                        <div class="card-icon">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </div>
+                    </div>
+                    <div class="value" id="dailyOutput">-</div>
+                    <span class="card-trend">Today's output</span>
+                </div>
+            </div>
+
+            <!-- Tables -->
+            <div class="tables-grid">
+                <!-- API Keys Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h2>
+                            <i class="fa-solid fa-key"></i>
+                            API Keys Usage
+                        </h2>
+                        <span class="badge" id="keyCount">0 keys</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>API Key</th>
+                                <th>Requests (24h)</th>
+                                <th>Total Requests</th>
+                                <th>Input (24h)</th>
+                                <th>Output (24h)</th>
+                                <th>Total Input</th>
+                                <th>Total Output</th>
+                            </tr>
+                        </thead>
+                        <tbody id="apiKeysBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Recent Logs Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h2>
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            Recent Requests
+                        </h2>
+                        <span class="badge">Live</span>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Name</th>
+                                <th>API Key</th>
+                                <th>Model</th>
+                                <th>Input Tokens</th>
+                                <th>Output Tokens</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentLogsBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function loadDashboard() {
+            const masterKey = sessionStorage.getItem('adminMasterKey');
+            if (!masterKey) {
+                window.location.href = '/admin/login';
+                return;
+            }
+                
+            try {
+                const response = await fetch('/admin/usage-data', {
+                    headers: {
+                        'Authorization': masterKey
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        throw new Error('Invalid master key');
+                    }
+                    throw new Error('Failed to load dashboard');
+                }
+                    
+                const data = await response.json();
+
+                // Update summary cards
+                document.getElementById('dailyRequests').textContent = data.summary.daily_requests.toLocaleString();
+                document.getElementById('totalRequests').textContent = data.summary.total_requests.toLocaleString();
+                document.getElementById('totalInput').textContent = data.summary.total_input_tokens.toLocaleString();
+                document.getElementById('totalOutput').textContent = data.summary.total_output_tokens.toLocaleString();
+                document.getElementById('dailyInput').textContent = data.summary.daily_input_tokens.toLocaleString();
+                document.getElementById('dailyOutput').textContent = data.summary.daily_output_tokens.toLocaleString();
+                document.getElementById('keyCount').textContent = data.summary.total_api_keys.toLocaleString() + " keys";
+                    
+                // Update table
+                const tbody = document.getElementById('apiKeysBody');
+                tbody.innerHTML = data.api_keys.map(key => `
+                    <tr>
+                        <td><strong>${key.name}</strong></td>
+                        <td><span class="api-key">${key.api_key}</span></td>
+                        <td>${key.daily_requests.toLocaleString()}</td>
+                        <td>${key.total_requests.toLocaleString()}</td>
+                        <td>${key.daily_input_tokens.toLocaleString()}</td>
+                        <td>${key.daily_output_tokens.toLocaleString()}</td>
+                        <td>${key.total_input_tokens.toLocaleString()}</td>
+                        <td>${key.total_output_tokens.toLocaleString()}</td>
+                    </tr>
+                `).join('');
+
+                if (data.recent_logs && data.recent_logs.length > 0) {
+                    const recentLogsBody = document.getElementById('recentLogsBody');
+                    recentLogsBody.innerHTML = data.recent_logs.map(log => {
+                        const date = new Date(log.timestamp * 1000);
+                        const timeStr = date.toLocaleTimeString();
+                        const dateStr = date.toLocaleDateString();
+        
+                        return `
+                            <tr>
+                                <td class="timestamp">${dateStr} ${timeStr}</td>
+                                <td><strong>${log.name}</strong></td>
+                                <td><span class="api-key">${log.api_key}</span></td>
+                                <td><span class="model-badge">${log.model}</span></td>
+                                <td>${log.input_tokens.toLocaleString()}</td>
+                                <td>${log.output_tokens.toLocaleString()}</td>
+                                <td>${log.duration.toFixed(2)}s</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    document.getElementById('recentLogsBody').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #666;">No recent requests</td></tr>';
+                }
+                    
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                    
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = error.message;
+                    
+                if (error.message === 'Invalid master key') {
+                    setTimeout(() => {
+                        window.location.href = '/admin/login';
+                    }, 2000);
+                }
+            }
+        }
+            
+        function logout() {
+            sessionStorage.removeItem('adminMasterKey');
+            window.location.href = '/admin/login';
+        }
+            
+        // Load dashboard on page load
+        loadDashboard();
+            
+        // Refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    </script>
+    <script src="https://kit.fontawesome.com/29eb7360a1.js" crossorigin="anonymous"></script>
+</body>
+</html>

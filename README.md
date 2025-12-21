@@ -5,7 +5,7 @@ A unified OpenAI API proxy server built with Express and using SQLLite as its da
 ## Features
 
 - Multi-endpoint API proxying
-- Easy variable and API key management with admin panel
+- Easy management of models, endpoints and API keys with admin panel
 - Rate limiting (RPD/RPM)
 - Request logging (SQLLite)
 - Prometheus metrics
@@ -24,7 +24,7 @@ cd nore-proxy-node
 npm install
 ```
 
-3. Configure environment and edit .env with your desired values:
+3. (OPTIONAL) Configure environment and edit .env with your desired values:
 ```bash
 copy .env.example .env
 ```
@@ -47,6 +47,8 @@ npm start
 
 | Endpoint | Description |
 |----------|-------------|
+| `/` | Main page |
+| `/usage` | View usage for users |
 | `/models` | View models |
 | `/admin/login` | Admin panel login page |
 | `/admin/dashboard` | Main dashboard |
@@ -60,8 +62,9 @@ npm start
 |----------|--------|-------------|
 | `/v1/models` | GET | View models |
 | `/v1/chat/completions` | POST | API Handler |
-| `/api/stats/summary` | GET | Summary of statistics of all users |
+| `/api/summary` | GET | Summary statistics of all users |
 | `/api/usage` | GET | View usage statistics |
+| `/api/logs` | GET | View recent logs |
 | `/api/keys` | GET | Get all API keys |
 | `/api/keys` | POST | Add new API key |
 | `/api/keys` | PUT | Update existing key |

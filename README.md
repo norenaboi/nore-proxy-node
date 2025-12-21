@@ -1,13 +1,13 @@
 # Nore Proxy
 
-A unified OpenAI API proxy server built with Express.
+A unified OpenAI API proxy server built with Express and using SQLLite as its database.
 
 ## Features
 
 - Multi-endpoint API proxying
-- API key management
+- Easy variable and API key management with admin panel
 - Rate limiting (RPD/RPM)
-- Request logging
+- Request logging (SQLLite)
 - Prometheus metrics
 - Model mapping
 
@@ -24,10 +24,9 @@ cd nore-proxy-node
 npm install
 ```
 
-3. Configure environment/models and edit .env/models with your actual values:
+3. Configure environment and edit .env with your desired values:
 ```bash
 copy .env.example .env
-copy allowed_models.txt.example allowed_models.txt
 ```
 
 4. Run the server:
@@ -39,13 +38,23 @@ npm start
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `V{index}_URL` | Backend API endpoints | - |
-| `V{index}_TOKEN` | Authentication tokens | - |
+| `PORT` | Server port | 8741 |
 | `MASTER_KEY` | Admin authentication key | admin |
 | `RPD_DEFAULT` | Requests per day limit | 500 |
 | `RPM_DEFAULT` | Requests per minute limit | 10 |
 
-## API Endpoints
+## Frontend
+
+| Endpoint | Description |
+|----------|-------------|
+| `/models` | View models |
+| `/admin/login` | Admin panel login page |
+| `/admin/dashboard` | Main dashboard |
+| `/admin/keys` | API key manager panel |
+| `/admin/models` | Model manager panel |
+| `/admin/endpoints` | Endpoint manager panel |
+
+## Backend
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -53,8 +62,16 @@ npm start
 | `/v1/chat/completions` | POST | API Handler |
 | `/api/stats/summary` | GET | Summary of statistics of all users |
 | `/api/usage` | GET | View usage statistics |
-| `/admin/keys` | GET | Get all API keys |
-| `/admin/keys/add` | POST | Add new API key |
-| `/admin/keys/update` | PUT | Update existing key |
-| `/admin/keys/delete` | DELETE | Delete key |
-| `/admin/reload` | POST | Reload/Update configuration |
+| `/api/keys` | GET | Get all API keys |
+| `/api/keys` | POST | Add new API key |
+| `/api/keys` | PUT | Update existing key |
+| `/api/keys` | DELETE | Delete key |
+| `/api/models` | GET | Get all models |
+| `/api/models` | POST | Add new model |
+| `/api/models` | PUT | Update existing model |
+| `/api/models` | DELETE | Delete model |
+| `/api/endpoints` | GET | Get all endpoints |
+| `/api/endpoints` | POST | Add new endpoint |
+| `/api/endpoints` | PUT | Update existing endpoint |
+| `/api/endpoints` | DELETE | Delete endpoint |
+| `/api/reload` | POST | Reload/Update configuration |

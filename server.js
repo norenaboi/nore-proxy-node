@@ -4,7 +4,6 @@ import Config from './config/index.js';
 import { loadModelsFromFile, MODEL_REGISTRY } from './utils/helpers.js';
 import apiKeyManager from './services/apiKeyManager.js';
 import realtimeStats from './services/realtimeStats.js';
-import logManager from './services/logManager.js';
 import { activeRequestsGauge, modelRegistryGauge } from './services/metricsService.js';
 import prometheusClient from './services/metricsService.js';
 
@@ -37,7 +36,6 @@ async function initialize() {
 
   // Load models from file
   loadModelsFromFile();
-  console.log(`Loaded ${Object.keys(MODEL_REGISTRY).length} models`);
 
   // Start background tasks
   startBackgroundTasks();
@@ -60,7 +58,6 @@ function startBackgroundTasks() {
 
     try {
       realtimeStats.cleanupOldRequests();
-      logManager.checkAndRotate();
 
       // Update Prometheus gauges
       activeRequestsGauge.set(realtimeStats.activeRequests.size);
@@ -155,10 +152,10 @@ const server = app.listen(Config.PORT, Config.HOST, async () => {
   console.log('='.repeat(20) + '     NORE PROXY     ' + '='.repeat(20));
   console.log('='.repeat(60));
   console.log(`  Launched at:    ${datetime}`);
-  console.log(`  Host:           ${Config.HOST}`);
   console.log(`  Port:           ${Config.PORT}`);
   console.log(`  Rate Limits:    ${Config.RPM_DEFAULT} RPM / ${Config.RPD_DEFAULT} RPD`);
-  console.log(`  Endpoints:      ${Object.keys(Config.ENDPOINTS).length} configured`);
+  console.log(`  Endpoints:      Configured ${Object.keys(Config.ENDPOINTS).length} endpoints`);
+  console.log(`  Models:         Loaded ${Object.keys(MODEL_REGISTRY).length} models`);
   console.log(`  Main Page:      http://localhost:${Config.PORT}`);
   console.log(`  Login:          http://localhost:${Config.PORT}/admin/login`);
   console.log(`  API Base URL:   http://localhost:${Config.PORT}/v1`);

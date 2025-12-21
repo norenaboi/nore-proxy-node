@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Key Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" 
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
             margin: 0;
@@ -693,17 +695,25 @@
             <div class="logo-icon">
                 <i class="fa-brands fa-square-web-awesome-stroke"></i>
             </div>
-            <span class="logo-text">API Admin</span>
+            <span class="logo-text">Admin Panel</span>
         </div>
         
         <nav class="nav-menu">
-            <a class="nav-item" href="/admin/usage">
+            <a class="nav-item" href="/admin/dashboard">
                 <i class="fa-brands fa-quinscape"></i>
                 <span>Dashboard</span>
             </a>
             <a class="nav-item active">
                 <i class="fa-solid fa-key"></i>
                 <span>API Keys</span>
+            </a>
+            <a class="nav-item" href="/admin/endpoints">
+                <i class="fa-solid fa-hexagon-nodes"></i>
+                <span>Endpoints</span>
+            </a>
+            <a class="nav-item" href="/admin/models">
+                <i class="fa-solid fa-comment-nodes"></i>
+                <span>Models</span>
             </a>
         </nav>
         
@@ -829,7 +839,8 @@
             }
 
             try {
-                const response = await fetch('/admin/keys', {
+                const response = await fetch('/api/keys', {
+                    method: 'GET',
                     headers: {
                         'Authorization': MASTER_KEY
                     }
@@ -941,7 +952,7 @@
             }
 
             try {
-                const response = await fetch('/admin/keys/add', {
+                const response = await fetch('/api/keys', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1034,7 +1045,7 @@
             }
 
             try {
-                const response = await fetch(`/admin/keys/update`, {
+                const response = await fetch(`/api/keys`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1073,7 +1084,7 @@
             }
 
             try {
-                const response = await fetch(`/admin/keys/delete`, {
+                const response = await fetch(`/api/keys`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1107,7 +1118,7 @@
             }
 
             try {
-                const response = await fetch('/admin/reload', {
+                const response = await fetch('/api/reload', {
                     method: 'POST',
                     headers: { 
                         'Authorization': MASTER_KEY
@@ -1126,6 +1137,5 @@
         loadKeys();
         userCount();
     </script>
-    <script src="https://kit.fontawesome.com/29eb7360a1.js" crossorigin="anonymous"></script>
 </body>
 </html>

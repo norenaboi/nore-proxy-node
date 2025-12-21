@@ -32,23 +32,35 @@ router.get('/v1', (req, res) => {
 });
 
 router.get('/models', (req, res) => {
-  serveHtml(res, 'models.html');
+  serveHtml(res, 'display.html');
 });
 
 router.get('/usage', (req, res) => {
-  serveHtml(res, 'user_usage.html');
+  serveHtml(res, 'usage.html');
+});
+
+router.get('/admin', (req, res) => {
+  res.redirect('/admin/login');
 });
 
 router.get('/admin/login', (req, res) => {
-  serveHtml(res, 'login_admin.html');
+  serveHtml(res, 'login.html');
 });
 
-router.get('/admin/usage', (req, res) => {
-  serveHtml(res, 'admin_usage.html');
+router.get('/admin/dashboard', (req, res) => {
+  serveHtml(res, 'dashboard.html');
 });
 
-router.get('/admin/manager', (req, res) => {
-  serveHtml(res, 'admin_manager.html');
+router.get('/admin/keys', (req, res) => {
+  serveHtml(res, 'keys.html');
+});
+
+router.get('/admin/models', (req, res) => {
+  serveHtml(res, 'models.html');
+});
+
+router.get('/admin/endpoints', (req, res) => {
+  serveHtml(res, 'endpoints.html');
 });
 
 export default router;

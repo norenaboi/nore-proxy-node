@@ -11,7 +11,7 @@ export function setStartupTime(time) {
   startupTime = time;
 }
 
-router.get('/api/stats/summary', async (req, res) => {
+router.get('/api/summary', async (req, res) => {
   const currentTime = Date.now() / 1000;
   const dayAgo = currentTime - 86400;
 

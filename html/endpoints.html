@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Models</title>
+    <title>Admin Endpoints</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" 
           crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -582,11 +582,11 @@
                 <i class="fa-solid fa-key"></i>
                 <span>API Keys</span>
             </a>
-            <a class="nav-item" href="/admin/endpoints">
+            <a class="nav-item active">
                 <i class="fa-solid fa-hexagon-nodes"></i>
                 <span>Endpoints</span>
             </a>
-            <a class="nav-item active">
+            <a class="nav-item" href="/admin/models">
                 <i class="fa-solid fa-comment-nodes"></i>
                 <span>Models</span>
             </a>
@@ -602,7 +602,7 @@
     <main class="main-content">
         <div id="loading" class="loading">
             <div class="loading-spinner"></div>
-            <span>Loading models...</span>
+            <span>Loading endpoints...</span>
         </div>
         
         <div id="error" class="error" style="display: none;">
@@ -613,57 +613,62 @@
     <div id="dashboard" style="display: none;">
         <header class="header">
             <div>
-                <h1>Models</h1>
-                <span class="stats-badge" id="modelCount">
-                    <i class="fa-solid fa-cube"></i>
-                    <span>0 models</span>
+                <h1>Endpoints</h1>
+                <span class="stats-badge" id="endpointCount">
+                    <i class="fa-solid fa-hexagon-nodes"></i>
+                    <span>0 endpoints</span>
                 </span>
             </div>
             <div class="header-actions">
                 <button class="btn btn-primary" onclick="openAddModal()">
                     <i class="fa-solid fa-plus"></i>
-                    Add Model
+                    Add Endpoint
                 </button>
             </div>
         </header>
 
         <div class="card">
             <div class="card-header">
-                <span class="card-title">Allowed Models</span>
+                <span class="card-title">Backend Endpoints</span>
             </div>
             <div class="card-body">
-                <div id="modelsList" class="models-list">
-                    <!-- Models will be rendered here -->
+                <div id="endpointsList" class="models-list">
+                    <!-- Endpoints will be rendered here -->
                 </div>
                 <div id="emptyState" class="empty-state" style="display: none;">
-                    <i class="fa-solid fa-cube"></i>
-                    <p>No models configured yet</p>
+                    <i class="fa-solid fa-hexagon-nodes"></i>
+                    <p>No endpoints configured yet</p>
                     <button class="btn btn-primary" onclick="openAddModal()" style="margin-top: 16px;">
-                        Add Your First Model
+                        Add Your First Endpoint
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Add/Edit Modal -->
-        <div id="modelModal" class="modal-overlay">
+        <div id="endpointModal" class="modal-overlay">
             <div class="modal">
                 <div class="modal-header">
-                    <span class="modal-title" id="modalTitle">Add Model</span>
+                    <span class="modal-title" id="modalTitle">Add Endpoint</span>
                     <button class="modal-close" onclick="closeModal()">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label class="form-label">Model Name</label>
-                        <input type="text" id="modelInput" class="form-input" placeholder="e.g., claude-sonnet-4-20250514-v1">
-                        <p class="form-hint">For model mapping, use format: public_name:backend_name</p>
+                        <label class="form-label">Endpoint URL</label>
+                        <input type="text" id="urlInput" class="form-input" placeholder="e.g., http://localhost:8081/v1">
+                        <p class="form-hint">The base URL for the API endpoint</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">API Token</label>
+                        <input type="text" id="tokenInput" class="form-input" placeholder="e.g., sk-your-token">
+                        <p class="form-hint">Authentication token for this endpoint</p>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                    <button class="btn btn-primary" id="modalSubmit" onclick="submitModel()">Add Model</button>
+                    <button class="btn btn-primary" id="modalSubmit" onclick="submitEndpoint()">Add Endpoint</button>
                 </div>
             </div>
         </div>
@@ -672,13 +677,13 @@
         <div id="deleteModal" class="modal-overlay">
             <div class="modal">
                 <div class="modal-header">
-                    <span class="modal-title">Delete Model</span>
+                    <span class="modal-title">Delete Endpoint</span>
                     <button class="modal-close" onclick="closeDeleteModal()">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure you want to delete <strong id="deleteModelName"></strong>?</p>
+                    <p>Are you sure you want to delete <strong id="deleteEndpointName"></strong>?</p>
                     <p style="color: var(--gray-500); margin-top: 8px; font-size: 14px;">This action cannot be undone.</p>
                 </div>
                 <div class="modal-footer">
@@ -694,9 +699,9 @@
     </main>
     <script>
         const MASTER_KEY = sessionStorage.getItem('adminMasterKey');
-        let models = [];
-        let editingModel = null;
-        let deletingModel = null;
+        let endpoints = [];
+        let editingEndpoint = null;
+        let deletingEndpoint = null;
 
         // Check authentication
         if (!MASTER_KEY) {
@@ -709,23 +714,24 @@
             window.location.href = '/admin/login';
         }
 
-        // Load models on page load
-        document.addEventListener('DOMContentLoaded', loadModels);
+        // Load endpoints on page load
+        document.addEventListener('DOMContentLoaded', loadEndpoints);
 
-        async function loadModels() {
+        async function loadEndpoints() {
             try {
-                const response = await fetch('/api/models', {
+                const response = await fetch('/api/endpoints', {
+                    method: 'GET',
                     headers: {
                         'Authorization': MASTER_KEY
                     }
                 });
-            
-                if (!response.ok) throw new Error('Failed to load models');
-            
+        
+                if (!response.ok) throw new Error('Failed to load endpoints');
+        
                 const data = await response.json();
-                models = data.models || [];
-                renderModels();
-            
+                endpoints = data.endpoints || [];
+                renderEndpoints();
+        
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
             } catch (error) {
@@ -733,14 +739,14 @@
             }
         }
 
-        function renderModels() {
-            const list = document.getElementById('modelsList');
+        function renderEndpoints() {
+            const list = document.getElementById('endpointsList');
             const emptyState = document.getElementById('emptyState');
-            const countBadge = document.getElementById('modelCount');
+            const countBadge = document.getElementById('endpointCount');
     
-            countBadge.innerHTML = `<i class="fa-solid fa-cube"></i><span>${models.length} model${models.length !== 1 ? 's' : ''}</span>`;
+            countBadge.innerHTML = `<i class="fa-solid fa-hexagon-nodes"></i><span>${endpoints.length} endpoint${endpoints.length !== 1 ? 's' : ''}</span>`;
     
-            if (models.length === 0) {
+            if (endpoints.length === 0) {
                 list.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
@@ -749,27 +755,27 @@
             list.style.display = 'flex';
             emptyState.style.display = 'none';
     
-            list.innerHTML = models.map((model, index) => {
-                const hasMapping = model.includes(':');
-                const [publicName, backendName] = hasMapping ? model.split(':') : [model, null];
-        
-                // Use HTML entities for the quotes
-                const safeModel = JSON.stringify(model).replace(/"/g, '&quot;');
+            list.innerHTML = endpoints.map((endpoint) => {
+                const maskedToken = endpoint.token.substring(0, 7) + '...' + endpoint.token.substring(endpoint.token.length - 4);
         
                 return `
                     <div class="model-item">
                         <div class="model-info">
-                            <div style="flex-direction: row; display: flex; gap: 20px;">
-                                <div class="model-name">${escapeHtml(publicName)}</div>
-                                ${backendName ? `<div class="model-mapping">→ ${escapeHtml(backendName)}</div>` : ''}
+                            <div class="model-icon">
+                                <i class="fa-solid fa-server"></i>
+                            </div>
+                            <div>
+                                <div class="model-name">V${endpoint.index}</div>
+                                <div class="model-mapping">${escapeHtml(endpoint.url)}</div>
+                                <div class="model-mapping" style="color: var(--gray-400); font-family: monospace;">${escapeHtml(maskedToken)}</div>
                             </div>
                         </div>
                         <div class="model-actions">
-                            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${safeModel})">
+                            <button class="btn btn-secondary btn-sm" onclick="openEditModal(${endpoint.index})">
                                 <i class="fa-solid fa-pen"></i>
                                 Edit
                             </button>
-                            <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${safeModel})">
+                            <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${endpoint.index})">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -779,112 +785,116 @@
         }
 
         function openAddModal() {
-            editingModel = null;
-            document.getElementById('modalTitle').textContent = 'Add Model';
-            document.getElementById('modalSubmit').textContent = 'Add Model';
-            document.getElementById('modelInput').value = '';
-            document.getElementById('modelModal').classList.add('active');
+            editingEndpoint = null;
+            document.getElementById('modalTitle').textContent = 'Add Endpoint';
+            document.getElementById('modalSubmit').textContent = 'Add Endpoint';
+            document.getElementById('urlInput').value = '';
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('endpointModal').classList.add('active');
         }
 
-        function openEditModal(model) {
-            editingModel = model;
-            console.log('Opening edit modal for:', model);
-            document.getElementById('modalTitle').textContent = 'Edit Model';
+        function openEditModal(index) {
+            const endpoint = endpoints.find(e => e.index === index);
+            if (!endpoint) return;
+    
+            editingEndpoint = index;
+            document.getElementById('modalTitle').textContent = 'Edit Endpoint';
             document.getElementById('modalSubmit').textContent = 'Save Changes';
-            document.getElementById('modelInput').value = model;
-            document.getElementById('modelModal').classList.add('active');
+            document.getElementById('urlInput').value = endpoint.url;
+            document.getElementById('tokenInput').value = endpoint.token;
+            document.getElementById('endpointModal').classList.add('active');
         }
 
         function closeModal() {
-            document.getElementById('modelModal').classList.remove('active');
-            editingModel = null;
+            document.getElementById('endpointModal').classList.remove('active');
+            editingEndpoint = null;
         }
 
-        function openDeleteModal(model) {
-            deletingModel = model;
-            document.getElementById('deleteModelName').textContent = model;
+        function openDeleteModal(index) {
+            deletingEndpoint = index;
+            document.getElementById('deleteEndpointName').textContent = `Endpoint V${index}`;
             document.getElementById('deleteModal').classList.add('active');
         }
 
         function closeDeleteModal() {
             document.getElementById('deleteModal').classList.remove('active');
-            deletingModel = null;
+            deletingEndpoint = null;
         }
 
-        async function submitModel() {
-            const modelInput = document.getElementById('modelInput').value.trim();
-            console.log('Submitting:', { editingModel, modelInput });
-        
-            if (!modelInput) {
-                showToast('Please enter a model name', 'error');
+        async function submitEndpoint() {
+            const url = document.getElementById('urlInput').value.trim();
+            const token = document.getElementById('tokenInput').value.trim();
+    
+            if (!url || !token) {
+                showToast('Please enter both URL and token', 'error');
                 return;
             }
 
             try {
-                if (editingModel) {
-                    // Update existing model
-                    const response = await fetch('/api/models', {
+                if (editingEndpoint) {
+                    // Update existing endpoint
+                    const response = await fetch('/api/endpoints', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': MASTER_KEY
                         },
-                        body: JSON.stringify({ oldModel: editingModel, newModel: modelInput })
+                        body: JSON.stringify({ index: editingEndpoint, url, token })
                     });
-                
+            
                     if (!response.ok) {
                         const data = await response.json();
-                        throw new Error(data.error || 'Failed to update model');
+                        throw new Error(data.error || 'Failed to update endpoint');
                     }
-                
-                    showToast('Model updated successfully', 'success');
+            
+                    showToast('Endpoint updated successfully', 'success');
                 } else {
-                    // Add new model
-                    const response = await fetch('/api/models', {
+                    // Add new endpoint
+                    const response = await fetch('/api/endpoints', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Authorization': MASTER_KEY
                         },
-                        body: JSON.stringify({ model: modelInput })
+                        body: JSON.stringify({ url, token })
                     });
-                
+            
                     if (!response.ok) {
                         const data = await response.json();
-                        throw new Error(data.error || 'Failed to add model');
+                        throw new Error(data.error || 'Failed to add endpoint');
                     }
-                
-                    showToast('Model added successfully', 'success');
-                }
             
+                    showToast('Endpoint added successfully', 'success');
+                }
+        
                 closeModal();
-                loadModels();
+                loadEndpoints();
             } catch (error) {
                 showToast(error.message, 'error');
             }
         }
 
         async function confirmDelete() {
-            if (!deletingModel) return;
+            if (!deletingEndpoint) return;
 
             try {
-                const response = await fetch('/api/models', {
+                const response = await fetch('/api/endpoints', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': MASTER_KEY
                     },
-                    body: JSON.stringify({ model: deletingModel })
+                    body: JSON.stringify({ index: deletingEndpoint })
                 });
-            
+        
                 if (!response.ok) {
                     const data = await response.json();
-                    throw new Error(data.error || 'Failed to delete model');
+                    throw new Error(data.error || 'Failed to delete endpoint');
                 }
-            
-                showToast('Model deleted successfully', 'success');
+        
+                showToast('Endpoint deleted successfully', 'success');
                 closeDeleteModal();
-                loadModels();
+                loadEndpoints();
             } catch (error) {
                 showToast(error.message, 'error');
             }
@@ -904,7 +914,7 @@
                 ${message}
             `;
             toast.classList.add('show');
-        
+    
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);

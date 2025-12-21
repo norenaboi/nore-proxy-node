@@ -167,7 +167,7 @@
         // Refresh Stats
         async function refreshStats() {
             try {
-                const response = await fetch('/api/stats/summary');
+                const response = await fetch('/api/summary');
                 const data = await response.json();
                 
                 // Animate number changes

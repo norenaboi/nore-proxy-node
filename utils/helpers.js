@@ -45,11 +45,6 @@ export function loadModelsFromFile() {
         };
       }
     }
-
-    console.log(`Loaded ${Object.keys(MODEL_REGISTRY).length} models from allowed_models.txt`);
-    if (Object.keys(MODEL_ALIASES).length > 0) {
-      console.log(`Loaded ${Object.keys(MODEL_ALIASES).length} model aliases`);
-    }
   } catch (error) {
     if (error.code !== 'ENOENT') {
       console.error('Error loading models:', error);

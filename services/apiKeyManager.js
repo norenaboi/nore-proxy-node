@@ -1,34 +1,74 @@
-import fs from 'fs';
+import Database from 'better-sqlite3';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Config from '../config/index.js';
 import logManager from './logManager.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import fs from 'fs';
 
 class APIKeyManager {
-  constructor(keyFile = 'api_keys.json') {
-    this.keyFile = path.join(__dirname, '..', keyFile);
+  constructor(dbFile = 'api_keys.db') {
+    const dbPath = path.join(Config.LOG_DIR, dbFile);
+    this.db = new Database(dbPath);
+    
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS api_keys (
+        api_key TEXT PRIMARY KEY,
+        name TEXT,
+        active INTEGER,
+        usage_today INTEGER,
+        rpd INTEGER,
+        last_reset_date TEXT
+      )
+    `);
+
+    this.stmtInsert = this.db.prepare(`
+      INSERT INTO api_keys (api_key, name, active, usage_today, rpd, last_reset_date)
+      VALUES (@api_key, @name, @active, @usage_today, @rpd, @last_reset_date)
+    `);
+    this.stmtDeleteAll = this.db.prepare('DELETE FROM api_keys');
+    
     this.keys = {};
     this.loadKeys();
   }
 
   loadKeys() {
     try {
-      const data = fs.readFileSync(this.keyFile, 'utf-8');
-      const parsed = JSON.parse(data);
-      this.keys = parsed.keys || {};
-    } catch (error) {
-      if (error.code !== 'ENOENT') {
-        console.error('Error loading keys:', error);
+      const rows = this.db.prepare('SELECT * FROM api_keys').all();
+      
+      this.keys = {};
+      
+      for (const row of rows) {
+        this.keys[row.api_key] = {
+          name: row.name,
+          active: Boolean(row.active),
+          usage_today: row.usage_today,
+          rpd: row.rpd,
+          last_reset_date: row.last_reset_date
+        };
       }
+    } catch (error) {
+      console.error('Error loading keys from DB:', error);
       this.keys = {};
     }
   }
 
   saveKeys() {
-    fs.writeFileSync(this.keyFile, JSON.stringify({ keys: this.keys }, null, 2));
+    const saveTransaction = this.db.transaction(() => {
+      this.stmtDeleteAll.run();
+      
+      for (const [apiKey, data] of Object.entries(this.keys)) {
+        this.stmtInsert.run({
+          api_key: apiKey,
+          name: data.name,
+          active: data.active ? 1 : 0,
+          usage_today: data.usage_today,
+          rpd: data.rpd,
+          last_reset_date: data.last_reset_date
+        });
+      }
+    });
+
+    saveTransaction();
   }
 
   getKeys() {
@@ -36,8 +76,8 @@ class APIKeyManager {
       api_key: key,
       name: this.keys[key].name || 'Unnamed',
       active: this.keys[key].active || false,
-      usage_today: this.keys[key].usage_today || 'NaN',
-      rpd: this.keys[key].rpd || 'NaN'
+      usage_today: this.keys[key].usage_today ?? 'NaN',
+      rpd: this.keys[key].rpd ?? 'NaN'
     }));
   }
 
@@ -109,12 +149,12 @@ class APIKeyManager {
     this.saveKeys();
   }
 
-  addKey(apiKey, name, rpd = Config.RPD_DEFAULT) {
+  addKey(apiKey, name, rpd = Config.RPD_DEFAULT, usage_today = 0) {
     this.keys[apiKey] = {
       name,
       active: true,
       rpd,
-      usage_today: 0,
+      usage_today: usage_today,
       last_reset_date: new Date().toISOString().split('T')[0]
     };
     this.saveKeys();

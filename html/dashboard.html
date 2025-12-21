@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Usage Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" 
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
             margin: 0;
@@ -507,7 +509,7 @@
             <div class="logo-icon">
                 <i class="fa-brands fa-square-web-awesome-stroke"></i>
             </div>
-            <span class="logo-text">API Admin</span>
+            <span class="logo-text">Admin Panel</span>
         </div>
         
         <nav class="nav-menu">
@@ -515,9 +517,17 @@
                 <i class="fa-brands fa-quinscape"></i>
                 <span>Dashboard</span>
             </a>
-            <a class="nav-item" href="/admin/manager">
+            <a class="nav-item" href="/admin/keys">
                 <i class="fa-solid fa-key"></i>
                 <span>API Keys</span>
+            </a>
+            <a class="nav-item" href="/admin/endpoints">
+                <i class="fa-solid fa-hexagon-nodes"></i>
+                <span>Endpoints</span>
+            </a>
+            <a class="nav-item" href="/admin/models">
+                <i class="fa-solid fa-comment-nodes"></i>
+                <span>Models</span>
             </a>
         </nav>
         
@@ -679,7 +689,7 @@
             }
                 
             try {
-                const response = await fetch('/admin/usage-data', {
+                const response = await fetch('/api/logs', {
                     headers: {
                         'Authorization': masterKey
                     }
@@ -768,6 +778,5 @@
         // Refresh every 30 seconds
         setInterval(loadDashboard, 30000);
     </script>
-    <script src="https://kit.fontawesome.com/29eb7360a1.js" crossorigin="anonymous"></script>
 </body>
 </html>

@@ -67,7 +67,7 @@ class Config {
 
   static reload() {
     dotenv.config({ override: true });
-    this.MASTER_KEY = process.env.MASTER_KEY;
+    this.MASTER_KEY = process.env.MASTER_KEY || 'admin';
     this.RPD_DEFAULT = parseInt(process.env.RPD_DEFAULT || '500', 500);
     this.RPM_DEFAULT = parseInt(process.env.RPM_DEFAULT || '10', 10);
     this.loadEndpoints();

@@ -4,6 +4,9 @@ import Config from '../config/index.js';
 
 class LogManager {
   constructor() {
+    if (!fs.existsSync(Config.LOG_DIR)) {
+          fs.mkdirSync(Config.LOG_DIR, { recursive: true });
+        }
     const dbPath = path.join(Config.LOG_DIR, 'logs.db');
     this.db = new Database(dbPath);
     this.db.pragma('journal_mode = WAL');

@@ -1,6 +1,7 @@
 import path from 'path';
 import Database from 'better-sqlite3';
 import Config from '../config/index.js';
+import fs from 'fs';
 
 class LogManager {
   constructor() {

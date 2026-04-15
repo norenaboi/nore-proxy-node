@@ -10,6 +10,8 @@ A unified OpenAI API proxy server built with Express and using SQLLite as its da
 - Request logging (SQLLite)
 - Prometheus metrics
 - Model mapping
+- Prompt caching support for Claude
+- Supports tool calls
 
 ## Installation
 

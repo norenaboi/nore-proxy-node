@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Endpoints</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
@@ -572,7 +572,7 @@
             </div>
             <span class="logo-text">Admin Panel</span>
         </div>
-        
+
         <nav class="nav-menu">
             <a class="nav-item" href="/admin/dashboard">
                 <i class="fa-brands fa-quinscape"></i>
@@ -590,8 +590,12 @@
                 <i class="fa-solid fa-comment-nodes"></i>
                 <span>Models</span>
             </a>
+            <a class="nav-item" href="/admin/settings">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
         </nav>
-        
+
         <button class="logout" onclick="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>
@@ -604,7 +608,7 @@
             <div class="loading-spinner"></div>
             <span>Loading endpoints...</span>
         </div>
-        
+
         <div id="error" class="error" style="display: none;">
             <span id="errorText">Error message here</span>
         </div>
@@ -725,13 +729,13 @@
                         'Authorization': MASTER_KEY
                     }
                 });
-        
+
                 if (!response.ok) throw new Error('Failed to load endpoints');
-        
+
                 const data = await response.json();
                 endpoints = data.endpoints || [];
                 renderEndpoints();
-        
+
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
             } catch (error) {
@@ -743,21 +747,21 @@
             const list = document.getElementById('endpointsList');
             const emptyState = document.getElementById('emptyState');
             const countBadge = document.getElementById('endpointCount');
-    
+
             countBadge.innerHTML = `<i class="fa-solid fa-hexagon-nodes"></i><span>${endpoints.length} endpoint${endpoints.length !== 1 ? 's' : ''}</span>`;
-    
+
             if (endpoints.length === 0) {
                 list.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
             }
-    
+
             list.style.display = 'flex';
             emptyState.style.display = 'none';
-    
+
             list.innerHTML = endpoints.map((endpoint) => {
                 const maskedToken = endpoint.token.substring(0, 7) + '...' + endpoint.token.substring(endpoint.token.length - 4);
-        
+
                 return `
                     <div class="model-item">
                         <div class="model-info">
@@ -796,7 +800,7 @@
         function openEditModal(index) {
             const endpoint = endpoints.find(e => e.index === index);
             if (!endpoint) return;
-    
+
             editingEndpoint = index;
             document.getElementById('modalTitle').textContent = 'Edit Endpoint';
             document.getElementById('modalSubmit').textContent = 'Save Changes';
@@ -824,7 +828,7 @@
         async function submitEndpoint() {
             const url = document.getElementById('urlInput').value.trim();
             const token = document.getElementById('tokenInput').value.trim();
-    
+
             if (!url || !token) {
                 showToast('Please enter both URL and token', 'error');
                 return;
@@ -841,12 +845,12 @@
                         },
                         body: JSON.stringify({ index: editingEndpoint, url, token })
                     });
-            
+
                     if (!response.ok) {
                         const data = await response.json();
                         throw new Error(data.error || 'Failed to update endpoint');
                     }
-            
+
                     showToast('Endpoint updated successfully', 'success');
                 } else {
                     // Add new endpoint
@@ -858,15 +862,15 @@
                         },
                         body: JSON.stringify({ url, token })
                     });
-            
+
                     if (!response.ok) {
                         const data = await response.json();
                         throw new Error(data.error || 'Failed to add endpoint');
                     }
-            
+
                     showToast('Endpoint added successfully', 'success');
                 }
-        
+
                 closeModal();
                 loadEndpoints();
             } catch (error) {
@@ -886,12 +890,12 @@
                     },
                     body: JSON.stringify({ index: deletingEndpoint })
                 });
-        
+
                 if (!response.ok) {
                     const data = await response.json();
                     throw new Error(data.error || 'Failed to delete endpoint');
                 }
-        
+
                 showToast('Endpoint deleted successfully', 'success');
                 closeDeleteModal();
                 loadEndpoints();
@@ -914,7 +918,7 @@
                 ${message}
             `;
             toast.classList.add('show');
-    
+
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);

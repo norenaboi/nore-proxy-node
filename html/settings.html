@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Admin Settings</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --primary: #6366f1;
+                --primary-dark: #4f46e5;
+                --primary-light: #a5b4fc;
+                --success: #10b981;
+                --warning: #f59e0b;
+                --danger: #ef4444;
+                --dark: #1e1b4b;
+                --gray-50: #f8fafc;
+                --gray-100: #f1f5f9;
+                --gray-200: #e2e8f0;
+                --gray-300: #cbd5e1;
+                --gray-400: #94a3b8;
+                --gray-500: #64748b;
+                --gray-600: #475569;
+                --gray-700: #334155;
+                --gray-800: #1e293b;
+                --gray-900: #0f172a;
+                --card-shadow:
+                    0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+                --card-shadow-hover: 0 10px 40px rgba(0, 0, 0, 0.1);
+            }
+
+            body {
+                font-family:
+                    "Inter",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    sans-serif;
+                background: var(--gray-300);
+                min-height: 100vh;
+            }
+
+            /* ── Sidebar ────────────────────────────────────────────── */
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 260px;
+                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                z-index: 100;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 40px;
+            }
+
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(
+                    135deg,
+                    var(--primary) 0%,
+                    #8b5cf6 100%
+                );
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .logo-text {
+                color: white;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                flex: 1;
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                color: var(--gray-400);
+                text-decoration: none;
+                transition: all 0.2s ease;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            .nav-item:hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: white;
+            }
+
+            .nav-item.active {
+                background: linear-gradient(
+                    135deg,
+                    var(--primary) 0%,
+                    #8b5cf6 100%
+                );
+                color: white;
+            }
+
+            .logout {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                color: var(--danger);
+                text-decoration: none;
+                transition: all 0.2s ease;
+                cursor: pointer;
+                border: none;
+                background: rgba(239, 68, 68, 0.1);
+                font-size: 14px;
+                font-family: inherit;
+                width: 100%;
+            }
+
+            .logout:hover {
+                background: rgba(239, 68, 68, 0.2);
+            }
+
+            /* ── Main Content ───────────────────────────────────────── */
+            .main-content {
+                margin-left: 260px;
+                padding: 32px;
+                min-height: 100vh;
+            }
+
+            .page-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 32px;
+            }
+
+            .page-header h1 {
+                color: var(--gray-900);
+                font-size: 28px;
+                font-weight: 700;
+            }
+
+            /* ── Cards ──────────────────────────────────────────────── */
+            .card {
+                background: white;
+                border-radius: 16px;
+                box-shadow: var(--card-shadow);
+                overflow: hidden;
+                margin-bottom: 24px;
+            }
+
+            .card-header {
+                padding: 20px 24px;
+                border-bottom: 1px solid var(--gray-200);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .card-header i {
+                font-size: 18px;
+                color: var(--primary);
+            }
+
+            .card-header h2 {
+                font-size: 17px;
+                font-weight: 600;
+                color: var(--gray-800);
+            }
+
+            .card-header .card-subtitle {
+                font-size: 13px;
+                color: var(--gray-500);
+                margin-left: auto;
+            }
+
+            .card-body {
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            /* ── Setting Row ────────────────────────────────────────── */
+            .setting-row {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 24px;
+            }
+
+            .setting-row + .setting-row {
+                padding-top: 24px;
+                border-top: 1px solid var(--gray-100);
+            }
+
+            .setting-info {
+                flex: 1;
+            }
+
+            .setting-label {
+                font-size: 15px;
+                font-weight: 600;
+                color: var(--gray-800);
+                margin-bottom: 4px;
+            }
+
+            .setting-description {
+                font-size: 13px;
+                color: var(--gray-500);
+                line-height: 1.5;
+            }
+
+            .setting-control {
+                display: flex;
+                align-items: center;
+                flex-shrink: 0;
+            }
+
+            /* ── Toggle Switch ──────────────────────────────────────── */
+            .toggle-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .toggle {
+                position: relative;
+                width: 52px;
+                height: 28px;
+                cursor: pointer;
+            }
+
+            .toggle input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+                position: absolute;
+            }
+
+            .toggle-track {
+                position: absolute;
+                inset: 0;
+                background: var(--gray-300);
+                border-radius: 999px;
+                transition: background 0.25s ease;
+            }
+
+            .toggle input:checked + .toggle-track {
+                background: var(--primary);
+            }
+
+            .toggle-thumb {
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                width: 22px;
+                height: 22px;
+                background: white;
+                border-radius: 50%;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+                transition: transform 0.25s ease;
+            }
+
+            .toggle input:checked ~ .toggle-thumb {
+                transform: translateX(24px);
+            }
+
+            .toggle-status {
+                font-size: 13px;
+                font-weight: 500;
+                color: var(--gray-500);
+                min-width: 32px;
+            }
+
+            .toggle input:checked ~ .toggle-status,
+            .toggle-status.enabled {
+                color: var(--primary);
+            }
+
+            /* ── Number Input ───────────────────────────────────────── */
+            .number-input-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .number-input {
+                width: 80px;
+                padding: 9px 12px;
+                border: 2px solid var(--gray-200);
+                border-radius: 10px;
+                font-size: 14px;
+                font-family: inherit;
+                text-align: center;
+                background: var(--gray-50);
+                color: var(--gray-800);
+                transition: all 0.2s ease;
+            }
+
+            .number-input:focus {
+                outline: none;
+                border-color: var(--primary);
+                background: white;
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            }
+
+            .number-input:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+
+            /* ── Buttons ────────────────────────────────────────────── */
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: inherit;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-primary {
+                background: linear-gradient(
+                    135deg,
+                    var(--primary) 0%,
+                    #8b5cf6 100%
+                );
+                color: white;
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+            }
+
+            .btn-primary:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            /* ── Toast ──────────────────────────────────────────────── */
+            .toast {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                padding: 14px 20px;
+                border-radius: 12px;
+                color: white;
+                font-weight: 500;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                transform: translateY(100px);
+                opacity: 0;
+                transition: all 0.3s ease;
+                z-index: 2000;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            }
+
+            .toast.show {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .toast.success {
+                background: var(--success);
+            }
+            .toast.error {
+                background: var(--danger);
+            }
+
+            /* ── Loading skeleton ───────────────────────────────────── */
+            .loading-row {
+                height: 48px;
+                background: linear-gradient(
+                    90deg,
+                    var(--gray-100) 25%,
+                    var(--gray-200) 50%,
+                    var(--gray-100) 75%
+                );
+                background-size: 200% 100%;
+                animation: shimmer 1.4s infinite;
+                border-radius: 10px;
+            }
+
+            @keyframes shimmer {
+                0% {
+                    background-position: 200% 0;
+                }
+                100% {
+                    background-position: -200% 0;
+                }
+            }
+
+            /* ── Responsive ─────────────────────────────────────────── */
+            @media (max-width: 1024px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                }
+                .main-content {
+                    margin-left: 0;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .main-content {
+                    padding: 20px;
+                }
+                .setting-row {
+                    flex-direction: column;
+                    gap: 12px;
+                }
+            }
+
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+            ::-webkit-scrollbar-track {
+                background: var(--gray-100);
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--gray-300);
+                border-radius: 4px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-400);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fa-brands fa-square-web-awesome-stroke"></i>
+                </div>
+                <span class="logo-text">Admin Panel</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a class="nav-item" href="/admin/dashboard">
+                    <i class="fa-brands fa-quinscape"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" href="/admin/keys">
+                    <i class="fa-solid fa-key"></i>
+                    <span>API Keys</span>
+                </a>
+                <a class="nav-item" href="/admin/endpoints">
+                    <i class="fa-solid fa-hexagon-nodes"></i>
+                    <span>Endpoints</span>
+                </a>
+                <a class="nav-item" href="/admin/models">
+                    <i class="fa-solid fa-comment-nodes"></i>
+                    <span>Models</span>
+                </a>
+                <a class="nav-item active" href="/admin/settings">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <button class="logout" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+        </aside>
+
+        <!-- Toast -->
+        <div id="toast" class="toast">
+            <i id="toastIcon" class="fa-solid fa-circle-check"></i>
+            <span id="toastText"></span>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1>Settings</h1>
+                <button
+                    class="btn btn-primary"
+                    id="saveBtn"
+                    onclick="saveSettings()"
+                >
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Save Changes
+                </button>
+            </div>
+
+            <!-- Claude / Prompt Caching -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h2>Claude Prompt Caching</h2>
+                    <span class="card-subtitle">Anthropic / OpenRouter</span>
+                </div>
+                <div class="card-body" id="settingsBody">
+                    <div class="loading-row"></div>
+                    <div class="loading-row" style="width: 60%"></div>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            // ── Auth helpers ────────────────────────────────────────────────
+            function getMasterKey() {
+                const key = sessionStorage.getItem("adminMasterKey");
+                if (!key) {
+                    window.location.href = "/admin/login";
+                    return null;
+                }
+                return key;
+            }
+
+            function logout() {
+                sessionStorage.removeItem("adminMasterKey");
+                window.location.href = "/admin/login";
+            }
+
+            // ── Toast ────────────────────────────────────────────────────────
+            function showToast(message, type = "success") {
+                const toast = document.getElementById("toast");
+                const icon = document.getElementById("toastIcon");
+                const text = document.getElementById("toastText");
+                icon.className =
+                    type === "success"
+                        ? "fa-solid fa-circle-check"
+                        : "fa-solid fa-circle-exclamation";
+                text.textContent = message;
+                toast.className = `toast show ${type}`;
+                setTimeout(() => {
+                    toast.className = "toast";
+                }, 3500);
+            }
+
+            // ── In-memory settings snapshot ──────────────────────────────────
+            let settings = {};
+
+            // ── Render ───────────────────────────────────────────────────────
+            function renderSettings(s) {
+                settings = { ...s };
+
+                const body = document.getElementById("settingsBody");
+                body.innerHTML = `
+                <!-- Toggle: prompt caching enabled -->
+                <div class="setting-row">
+                    <div class="setting-info">
+                        <div class="setting-label">Enable Prompt Caching</div>
+                        <div class="setting-description">
+                            When enabled, the proxy automatically injects
+                            <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:12px;">cache_control</code>
+                            breakpoints into Claude messages before forwarding them to the backend.
+                            Caching can reduce costs and latency on long, repeated contexts.
+                            <br><br>
+                            Individual requests can still override this by including a
+                            <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:12px;">cache_depth</code>
+                            field in the request body
+                            (<code style="background:var(--gray-100);padding:1px 5px;border-radius:4px;font-size:12px;">-1</code> = disable for that request).
+                        </div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle" title="Toggle prompt caching">
+                            <input type="checkbox" id="cachingEnabled"
+                                   ${s.promptCachingEnabled ? "checked" : ""}
+                                   onchange="onCachingToggle()">
+                            <div class="toggle-track"></div>
+                            <div class="toggle-thumb"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Number: cache depth -->
+                <div class="setting-row" id="depthRow" style="${s.promptCachingEnabled ? "" : "opacity:0.45;pointer-events:none;"}">
+                    <div class="setting-info">
+                        <div class="setting-label">Cache Depth</div>
+                        <div class="setting-description">
+                            Controls how many recent messages are <em>excluded</em> from caching.
+                            <br>
+                            <strong>0</strong> &mdash; cache all messages.
+                            &nbsp;|&nbsp;
+                            <strong>1</strong> &mdash; cache all except the last message (most recent user turn).
+                            &nbsp;|&nbsp;
+                            <strong>N</strong> &mdash; cache all except the last N messages.
+                            <br><br>
+                            Anthropic allows up to 4 cache breakpoints per request; the proxy
+                            distributes them evenly across eligible messages.
+                        </div>
+                    </div>
+                    <div class="setting-control">
+                        <div class="number-input-wrapper">
+                            <input type="number" class="number-input" id="cachingDepth"
+                                   min="0" max="100" step="1"
+                                   value="${s.promptCachingDepth}"
+                                   ${s.promptCachingEnabled ? "" : "disabled"}>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }
+
+            // ── Toggle handler ───────────────────────────────────────────────
+            function onCachingToggle() {
+                const enabled =
+                    document.getElementById("cachingEnabled").checked;
+                const depthRow = document.getElementById("depthRow");
+                const depthInput = document.getElementById("cachingDepth");
+                depthRow.style.opacity = enabled ? "1" : "0.45";
+                depthRow.style.pointerEvents = enabled ? "auto" : "none";
+                depthInput.disabled = !enabled;
+            }
+
+            // ── Load ─────────────────────────────────────────────────────────
+            async function loadSettings() {
+                const key = getMasterKey();
+                if (!key) return;
+
+                try {
+                    const res = await fetch("/api/settings", {
+                        headers: { Authorization: key },
+                    });
+
+                    if (res.status === 401 || res.status === 403) {
+                        logout();
+                        return;
+                    }
+                    if (!res.ok) throw new Error("Failed to load settings");
+
+                    const data = await res.json();
+                    renderSettings(data.settings);
+                } catch (err) {
+                    showToast(
+                        "Error loading settings: " + err.message,
+                        "error",
+                    );
+                }
+            }
+
+            // ── Save ─────────────────────────────────────────────────────────
+            async function saveSettings() {
+                const key = getMasterKey();
+                if (!key) return;
+
+                const saveBtn = document.getElementById("saveBtn");
+                const enabledEl = document.getElementById("cachingEnabled");
+                const depthEl = document.getElementById("cachingDepth");
+
+                if (!enabledEl || !depthEl) {
+                    showToast("Settings not loaded yet", "error");
+                    return;
+                }
+
+                const depth = parseInt(depthEl.value, 10);
+                if (isNaN(depth) || depth < 0) {
+                    showToast(
+                        "Cache depth must be a non-negative integer",
+                        "error",
+                    );
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+
+                try {
+                    const res = await fetch("/api/settings", {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: key,
+                        },
+                        body: JSON.stringify({
+                            promptCachingEnabled: enabledEl.checked,
+                            promptCachingDepth: depth,
+                        }),
+                    });
+
+                    if (res.status === 401 || res.status === 403) {
+                        logout();
+                        return;
+                    }
+
+                    const data = await res.json();
+                    if (!res.ok)
+                        throw new Error(
+                            data.error || "Failed to save settings",
+                        );
+
+                    showToast("Settings saved successfully!", "success");
+                    renderSettings(data.settings);
+                } catch (err) {
+                    showToast("Error saving settings: " + err.message, "error");
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML =
+                        '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+                }
+            }
+
+            // ── Init ─────────────────────────────────────────────────────────
+            loadSettings();
+        </script>
+    </body>
+</html>

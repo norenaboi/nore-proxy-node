@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Models</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         * {
@@ -572,7 +572,7 @@
             </div>
             <span class="logo-text">Admin Panel</span>
         </div>
-        
+
         <nav class="nav-menu">
             <a class="nav-item" href="/admin/dashboard">
                 <i class="fa-brands fa-quinscape"></i>
@@ -590,8 +590,12 @@
                 <i class="fa-solid fa-comment-nodes"></i>
                 <span>Models</span>
             </a>
+            <a class="nav-item" href="/admin/settings">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Settings</span>
+            </a>
         </nav>
-        
+
         <button class="logout" onclick="logout()">
             <i class="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>
@@ -604,7 +608,7 @@
             <div class="loading-spinner"></div>
             <span>Loading models...</span>
         </div>
-        
+
         <div id="error" class="error" style="display: none;">
             <span id="errorText">Error message here</span>
         </div>
@@ -719,13 +723,13 @@
                         'Authorization': MASTER_KEY
                     }
                 });
-            
+
                 if (!response.ok) throw new Error('Failed to load models');
-            
+
                 const data = await response.json();
                 models = data.models || [];
                 renderModels();
-            
+
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
             } catch (error) {
@@ -737,25 +741,25 @@
             const list = document.getElementById('modelsList');
             const emptyState = document.getElementById('emptyState');
             const countBadge = document.getElementById('modelCount');
-    
+
             countBadge.innerHTML = `<i class="fa-solid fa-cube"></i><span>${models.length} model${models.length !== 1 ? 's' : ''}</span>`;
-    
+
             if (models.length === 0) {
                 list.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
             }
-    
+
             list.style.display = 'flex';
             emptyState.style.display = 'none';
-    
+
             list.innerHTML = models.map((model, index) => {
                 const hasMapping = model.includes(':');
                 const [publicName, backendName] = hasMapping ? model.split(':') : [model, null];
-        
+
                 // Use HTML entities for the quotes
                 const safeModel = JSON.stringify(model).replace(/"/g, '&quot;');
-        
+
                 return `
                     <div class="model-item">
                         <div class="model-info">
@@ -814,7 +818,7 @@
         async function submitModel() {
             const modelInput = document.getElementById('modelInput').value.trim();
             console.log('Submitting:', { editingModel, modelInput });
-        
+
             if (!modelInput) {
                 showToast('Please enter a model name', 'error');
                 return;
@@ -831,12 +835,12 @@
                         },
                         body: JSON.stringify({ oldModel: editingModel, newModel: modelInput })
                     });
-                
+
                     if (!response.ok) {
                         const data = await response.json();
                         throw new Error(data.error || 'Failed to update model');
                     }
-                
+
                     showToast('Model updated successfully', 'success');
                 } else {
                     // Add new model
@@ -848,15 +852,15 @@
                         },
                         body: JSON.stringify({ model: modelInput })
                     });
-                
+
                     if (!response.ok) {
                         const data = await response.json();
                         throw new Error(data.error || 'Failed to add model');
                     }
-                
+
                     showToast('Model added successfully', 'success');
                 }
-            
+
                 closeModal();
                 loadModels();
             } catch (error) {
@@ -876,12 +880,12 @@
                     },
                     body: JSON.stringify({ model: deletingModel })
                 });
-            
+
                 if (!response.ok) {
                     const data = await response.json();
                     throw new Error(data.error || 'Failed to delete model');
                 }
-            
+
                 showToast('Model deleted successfully', 'success');
                 closeDeleteModal();
                 loadModels();
@@ -904,7 +908,7 @@
                 ${message}
             `;
             toast.classList.add('show');
-        
+
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);

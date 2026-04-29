@@ -1,2 +1,2 @@
 #!/bin/bash
-konsole -e npm start
+npm start

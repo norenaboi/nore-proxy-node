@@ -1,7 +1,7 @@
-import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import express from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,58 +9,62 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 function serveHtml(res, filename) {
-  const htmlPath = path.join(__dirname, '..', 'html', filename);
-  const errorPath = path.join(__dirname, '..', 'html', '404.html');
+  const htmlPath = path.join(__dirname, "..", "html", filename);
+  const errorPath = path.join(__dirname, "..", "html", "404.html");
 
   if (fs.existsSync(htmlPath)) {
-    const content = fs.readFileSync(htmlPath, 'utf-8');
-    res.type('html').send(content);
+    const content = fs.readFileSync(htmlPath, "utf-8");
+    res.type("html").send(content);
   } else if (fs.existsSync(errorPath)) {
-    const errorContent = fs.readFileSync(errorPath, 'utf-8');
-    res.status(404).type('html').send(errorContent);
+    const errorContent = fs.readFileSync(errorPath, "utf-8");
+    res.status(404).type("html").send(errorContent);
   } else {
-    res.status(404).send('Page not found');
+    res.status(404).send("Page not found");
   }
 }
 
-router.get('/', (req, res) => {
-  serveHtml(res, 'index.html');
+router.get("/", (req, res) => {
+  serveHtml(res, "index.html");
 });
 
-router.get('/v1', (req, res) => {
-  res.redirect('/');
+router.get("/v1", (req, res) => {
+  res.redirect("/");
 });
 
-router.get('/models', (req, res) => {
-  serveHtml(res, 'display.html');
+router.get("/models", (req, res) => {
+  serveHtml(res, "display.html");
 });
 
-router.get('/usage', (req, res) => {
-  serveHtml(res, 'usage.html');
+router.get("/usage", (req, res) => {
+  serveHtml(res, "usage.html");
 });
 
-router.get('/admin', (req, res) => {
-  res.redirect('/admin/login');
+router.get("/admin", (req, res) => {
+  res.redirect("/admin/login");
 });
 
-router.get('/admin/login', (req, res) => {
-  serveHtml(res, 'login.html');
+router.get("/admin/login", (req, res) => {
+  serveHtml(res, "login.html");
 });
 
-router.get('/admin/dashboard', (req, res) => {
-  serveHtml(res, 'dashboard.html');
+router.get("/admin/dashboard", (req, res) => {
+  serveHtml(res, "dashboard.html");
 });
 
-router.get('/admin/keys', (req, res) => {
-  serveHtml(res, 'keys.html');
+router.get("/admin/keys", (req, res) => {
+  serveHtml(res, "keys.html");
 });
 
-router.get('/admin/models', (req, res) => {
-  serveHtml(res, 'models.html');
+router.get("/admin/models", (req, res) => {
+  serveHtml(res, "models.html");
 });
 
-router.get('/admin/endpoints', (req, res) => {
-  serveHtml(res, 'endpoints.html');
+router.get("/admin/endpoints", (req, res) => {
+  serveHtml(res, "endpoints.html");
+});
+
+router.get("/admin/settings", (req, res) => {
+  serveHtml(res, "settings.html");
 });
 
 export default router;

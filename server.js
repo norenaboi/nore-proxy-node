@@ -34,6 +34,7 @@ app.use(
           "'unsafe-inline'",
           "https://cdnjs.cloudflare.com",
           "https://cdn.jsdelivr.net",
+          "https://static.cloudflareinsights.com",
         ],
         styleSrc: [
           "'self'",
@@ -48,7 +49,9 @@ app.use(
           "https://fonts.gstatic.com",
         ],
         imgSrc: ["'self'", "data:"],
-        connectSrc: ["'self'"],
+        // Allow inline event handlers (onsubmit, onclick, etc.) used throughout the HTML pages
+        scriptSrcAttr: ["'unsafe-inline'"],
+        connectSrc: ["'self'", "https://cloudflareinsights.com"],
       },
     },
   }),

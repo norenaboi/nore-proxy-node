@@ -1,388 +1,411 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Key Usage</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-            background: #fafafa;
-            color: #333;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .back-link {
-            color: #888;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .back-link:hover {
-            color: #c0392b;
-        }
-
-        /* Loading */
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 15px;
-            position: relative;
-        }
-
-        .spinner::before,
-        .spinner::after {
-            content: '';
-            position: absolute;
-            border-radius: 50%;
-        }
-
-        .spinner::before {
-            width: 100%;
-            height: 100%;
-            border: 3px solid var(--ash-gray);
-            border-top-color: var(--gold);
-            animation: spin 1s linear infinite;
-        }
-
-        .spinner::after {
-            width: 70%;
-            height: 70%;
-            top: 15%;
-            left: 15%;
-            border: 3px solid var(--ash-gray);
-            border-bottom-color: var(--blood-red);
-            animation: spin 0.8s linear infinite reverse;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .loading p {
-            color: var(--gold);
-            font-size: 0.8rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-
-        /* Error */
-        .error {
-            margin-block: 20px;
-            padding: 15px 20px;
-            background-color: #c0392b;
-            border-radius: 8px;
-            border: 2px solid #eee;
-            color: white;
-            display: none;
-            text-align: center;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            width:50%;
-            margin-inline: auto;
-        }
-
-        .error.show {
-            display: block;
-            animation: shake 0.5s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-5px); }
-            40%, 80% { transform: translateX(5px); }
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px 0 40px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 40px;
-        }
-        
-        .logo {
-            font-size: 36px;
-            color: #c0392b;
-            margin-bottom: 10px;
-        }
-        
-        h1 {
-            font-size: 24px;
-            font-weight: 300;
-        }
-        
-        .subtitle {
-            color: #888;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .input-group {
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            color: #888;
-            margin-bottom: 10px;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            margin-bottom: 15px;
-        }
-        
-        .input-group input:focus {
-            outline: none;
-            border-color: #c0392b;
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 12px;
-            background: #c0392b;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .btn:hover {
-            background: #a93226;
-        }
-        
-        .loading-text {
-            text-align: center;
-            color: #888;
-            font-size: 14px;
-            padding: 20px;
-            display: none;
-        }
-        
-        .stats-section {
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        .stats-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            font-weight: 500;
-        }
-        
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f5f5f5;
-        }
-        
-        .stat-row:last-child {
-            border-bottom: none;
-        }
-        
-        .stat-label {
-            color: #888;
-            font-size: 14px;
-        }
-        
-        .stat-value {
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .stat-value.active {
-            color: #4ade80;
-        }
-
-        .stat-value.inactive {
-            color: var(--blood-red);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <a href="/" class="back-link">← Return to main menu</a>
-        
-        <header>
-            <h1>Usage</h1>
-        </header>
-        
-        <div class="input-group">
-            <label for="apiKey">
-                <i class="fa-solid fa-scroll"></i>
-                Enter Your API Key
-            </label>
-            <input 
-                type="password" 
-                id="apiKey" 
-                placeholder="sk-..."
-                onkeypress="if(event.key === 'Enter') checkUsage()"
-            >
-            <!-- Button -->
-            <button class="btn" onclick="checkUsage()">
-                <i class="fa-solid fa-eye"></i>
-                Reveal Usage
-            </button>
-        </div>
-
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Loading...</p>
-        </div>
-
-        <!-- Error -->
-        <div class="error" id="error"></div>
-        
-        <div class="stats-section" id="stats-section">
-            <div class="stats-header">Usage Statistics</div>
-            <div class="stat-row">
-                <span class="stat-label">Name</span>
-                <span class="stat-value" id="name">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Daily Quota (RPD)</span>
-                <span class="stat-value" id="quota">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Total Requests</span>
-                <span class="stat-value" id="total_requests">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Input Tokens (24h)</span>
-                <span class="stat-value" id="input_24h">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Output Tokens (24h)</span>
-                <span class="stat-value" id="output_24h">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Input Tokens (Total)</span>
-                <span class="stat-value" id="input_total">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Output Tokens (Total)</span>
-                <span class="stat-value" id="output_total">-</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Status</span>
-                <span class="stat-value status-active" id="status">-</span>
-            </div>
-        </div>
-    </div>
-    <script>
-        async function checkUsage() {
-            const apiKey = document.getElementById('apiKey').value;
-            const loading = document.getElementById('loading');
-            const error = document.getElementById('error');
-            const stats = document.getElementById('stats-section');
-                
-            // Reset displays
-            error.classList.remove('show');
-            stats.classList.remove('show');
-                
-            if (!apiKey) {
-                error.textContent = 'Error: Can\'t find API Key';
-                error.classList.add('show');
-                return;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>API Key Usage</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
             }
-                
-            loading.classList.add('show');
-                
-            try {
-                const response = await fetch('/api/usage', {  
-                    method: 'POST',  
-                    headers: {  
-                        'Content-Type': 'application/json',
-                        'Authorization': apiKey
-                    },  
-                });
-                    
-                loading.classList.remove('show');
-                    
-                if (!response.ok) {
-                    const data = await response.json();
-                    throw new Error(data.detail || 'Error: Request Denied');
+
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, sans-serif;
+                background: #fafafa;
+                color: #333;
+                min-height: 100vh;
+                padding: 40px 20px;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .back-link {
+                color: #888;
+                text-decoration: none;
+                font-size: 14px;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .back-link:hover {
+                color: #c0392b;
+            }
+
+            /* Loading */
+            .loading {
+                display: none;
+                text-align: center;
+                margin-top: 30px;
+                padding: 20px;
+            }
+
+            .loading.show {
+                display: block;
+            }
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+                margin: 0 auto 15px;
+                position: relative;
+            }
+
+            .spinner::before,
+            .spinner::after {
+                content: "";
+                position: absolute;
+                border-radius: 50%;
+            }
+
+            .spinner::before {
+                width: 100%;
+                height: 100%;
+                border: 3px solid var(--ash-gray);
+                border-top-color: var(--gold);
+                animation: spin 1s linear infinite;
+            }
+
+            .spinner::after {
+                width: 70%;
+                height: 70%;
+                top: 15%;
+                left: 15%;
+                border: 3px solid var(--ash-gray);
+                border-bottom-color: var(--blood-red);
+                animation: spin 0.8s linear infinite reverse;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
                 }
-                    
-                const data = await response.json();
-                    
-                // Update stats display
-                document.getElementById('name').textContent = 
-                    data.usage.name.toLocaleString();
-                document.getElementById('total_requests').textContent = 
-                    data.usage.total_requests.toLocaleString();
-                document.getElementById('quota').textContent = 
-                    data.usage.daily_requests.toLocaleString() + " / " + data.usage.rate_limit.toLocaleString();
-                document.getElementById('input_total').textContent = 
-                    data.usage.total_input_tokens.toLocaleString();
-                document.getElementById('output_total').textContent = 
-                    data.usage.total_output_tokens.toLocaleString();
-                document.getElementById('input_24h').textContent = 
-                    data.usage.daily_input_tokens.toLocaleString();
-                document.getElementById('output_24h').textContent = 
-                    data.usage.daily_output_tokens.toLocaleString();
-
-                statDiv = document.getElementById('status');
-
-                if(data.usage.active.toLocaleString() == "true") { statDiv.className = "stat-value active"; statDiv.textContent = "Active"; }
-                else { statDiv.className = "stat-value inactive"; statDiv.textContent = "Inactive"; }
-
-                stats.classList.add('show');
-                    
-            } catch (err) {
-                loading.classList.remove('show');
-                error.textContent = err.message;
-                error.classList.add('show');
+                100% {
+                    transform: rotate(360deg);
+                }
             }
-        }
-            
-        // Allow checking with Enter key
-        document.getElementById('apiKey').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                checkUsage();
+
+            .loading p {
+                color: var(--gold);
+                font-size: 0.8rem;
+                letter-spacing: 3px;
+                text-transform: uppercase;
             }
-        });
-    </script>
-</body>
+
+            /* Error */
+            .error {
+                margin-block: 20px;
+                padding: 15px 20px;
+                background-color: #c0392b;
+                border-radius: 8px;
+                border: 2px solid #eee;
+                color: white;
+                display: none;
+                text-align: center;
+                font-size: 0.85rem;
+                letter-spacing: 1px;
+                width: 50%;
+                margin-inline: auto;
+            }
+
+            .error.show {
+                display: block;
+                animation: shake 0.5s ease;
+            }
+
+            @keyframes shake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                20%,
+                60% {
+                    transform: translateX(-5px);
+                }
+                40%,
+                80% {
+                    transform: translateX(5px);
+                }
+            }
+
+            header {
+                text-align: center;
+                padding: 20px 0 40px;
+                border-bottom: 1px solid #eee;
+                margin-bottom: 40px;
+            }
+
+            .logo {
+                font-size: 36px;
+                color: #c0392b;
+                margin-bottom: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+                font-weight: 300;
+            }
+
+            .subtitle {
+                color: #888;
+                font-size: 14px;
+                margin-top: 5px;
+            }
+
+            .input-group {
+                background: white;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                padding: 30px;
+                margin-bottom: 30px;
+            }
+
+            .input-group label {
+                display: block;
+                font-size: 14px;
+                color: #888;
+                margin-bottom: 10px;
+            }
+
+            .input-group input {
+                width: 100%;
+                padding: 12px 15px;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+
+            .input-group input:focus {
+                outline: none;
+                border-color: #c0392b;
+            }
+
+            .btn {
+                width: 100%;
+                padding: 12px;
+                background: #c0392b;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                font-size: 14px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .btn:hover {
+                background: #a93226;
+            }
+
+            .loading-text {
+                text-align: center;
+                color: #888;
+                font-size: 14px;
+                padding: 20px;
+                display: none;
+            }
+
+            .stats-section {
+                background: white;
+                border: 1px solid #eee;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .stats-header {
+                padding: 15px 20px;
+                border-bottom: 1px solid #eee;
+                font-weight: 500;
+            }
+
+            .stat-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 15px 20px;
+                border-bottom: 1px solid #f5f5f5;
+            }
+
+            .stat-row:last-child {
+                border-bottom: none;
+            }
+
+            .stat-label {
+                color: #888;
+                font-size: 14px;
+            }
+
+            .stat-value {
+                font-weight: 500;
+                font-size: 14px;
+            }
+
+            .stat-value.active {
+                color: #4ade80;
+            }
+
+            .stat-value.inactive {
+                color: var(--blood-red);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <a href="/" class="back-link">← Return to main menu</a>
+
+            <header>
+                <h1>Usage</h1>
+            </header>
+
+            <div class="input-group">
+                <label for="apiKey">
+                    <i class="fa-solid fa-scroll"></i>
+                    Enter Your API Key
+                </label>
+                <input
+                    type="password"
+                    id="apiKey"
+                    placeholder="sk-..."
+                    onkeypress="if (event.key === 'Enter') checkUsage();"
+                />
+                <!-- Button -->
+                <button class="btn" onclick="checkUsage()">
+                    <i class="fa-solid fa-eye"></i>
+                    Reveal Usage
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading...</p>
+            </div>
+
+            <!-- Error -->
+            <div class="error" id="error"></div>
+
+            <div class="stats-section" id="stats-section">
+                <div class="stats-header">Usage Statistics</div>
+                <div class="stat-row">
+                    <span class="stat-label">Name</span>
+                    <span class="stat-value" id="name">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Daily Quota (RPD)</span>
+                    <span class="stat-value" id="quota">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Requests</span>
+                    <span class="stat-value" id="total_requests">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Input Tokens (24h)</span>
+                    <span class="stat-value" id="input_24h">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Output Tokens (24h)</span>
+                    <span class="stat-value" id="output_24h">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Input Tokens (Total)</span>
+                    <span class="stat-value" id="input_total">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Output Tokens (Total)</span>
+                    <span class="stat-value" id="output_total">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Status</span>
+                    <span class="stat-value status-active" id="status">-</span>
+                </div>
+            </div>
+        </div>
+        <script>
+            async function checkUsage() {
+                const apiKey = document.getElementById("apiKey").value;
+                const loading = document.getElementById("loading");
+                const error = document.getElementById("error");
+                const stats = document.getElementById("stats-section");
+
+                // Reset displays
+                error.classList.remove("show");
+                stats.classList.remove("show");
+
+                if (!apiKey) {
+                    error.textContent = "Error: Can't find API Key";
+                    error.classList.add("show");
+                    return;
+                }
+
+                loading.classList.add("show");
+
+                try {
+                    const response = await fetch("/api/usage", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + apiKey,
+                        },
+                    });
+
+                    loading.classList.remove("show");
+
+                    if (!response.ok) {
+                        const data = await response.json();
+                        throw new Error(data.detail || "Error: Request Denied");
+                    }
+
+                    const data = await response.json();
+
+                    // Update stats display
+                    document.getElementById("name").textContent =
+                        data.usage.name.toLocaleString();
+                    document.getElementById("total_requests").textContent =
+                        data.usage.total_requests.toLocaleString();
+                    document.getElementById("quota").textContent =
+                        data.usage.daily_requests.toLocaleString() +
+                        " / " +
+                        data.usage.rate_limit.toLocaleString();
+                    document.getElementById("input_total").textContent =
+                        data.usage.total_input_tokens.toLocaleString();
+                    document.getElementById("output_total").textContent =
+                        data.usage.total_output_tokens.toLocaleString();
+                    document.getElementById("input_24h").textContent =
+                        data.usage.daily_input_tokens.toLocaleString();
+                    document.getElementById("output_24h").textContent =
+                        data.usage.daily_output_tokens.toLocaleString();
+
+                    statDiv = document.getElementById("status");
+
+                    if (data.usage.active.toLocaleString() == "true") {
+                        statDiv.className = "stat-value active";
+                        statDiv.textContent = "Active";
+                    } else {
+                        statDiv.className = "stat-value inactive";
+                        statDiv.textContent = "Inactive";
+                    }
+
+                    stats.classList.add("show");
+                } catch (err) {
+                    loading.classList.remove("show");
+                    error.textContent = err.message;
+                    error.classList.add("show");
+                }
+            }
+
+            // Allow checking with Enter key
+            document
+                .getElementById("apiKey")
+                .addEventListener("keypress", function (e) {
+                    if (e.key === "Enter") {
+                        checkUsage();
+                    }
+                });
+        </script>
+    </body>
 </html>

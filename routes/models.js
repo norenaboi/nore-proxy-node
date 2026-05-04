@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-router.get("/v1/models", verifyApiKey, async (req, res) => {
+router.get("/v1/models", async (req, res) => {
   const modelsData = [];
   const modelAliases = {};
 

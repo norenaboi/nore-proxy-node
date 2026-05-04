@@ -311,22 +311,16 @@ router.post("/api/endpoints", verifyMasterKey, async (req, res) => {
     if (!url || !token)
       return res.status(400).json({ error: "URL and token required" });
 
-    // Validate URL scheme to prevent SSRF against internal network addresses
-    let parsed;
+    // Validate URL is well-formed and uses http or https
     try {
-      parsed = new URL(url);
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+        return res
+          .status(400)
+          .json({ error: "Endpoint URL must use HTTP or HTTPS" });
+      }
     } catch (_) {
       return res.status(400).json({ error: "Invalid URL" });
-    }
-    if (parsed.protocol !== "https:") {
-      return res.status(400).json({ error: "Endpoint URL must use HTTPS" });
-    }
-    const blockedHosts =
-      /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/i;
-    if (blockedHosts.test(parsed.hostname)) {
-      return res.status(400).json({
-        error: "Endpoint URL points to a disallowed internal address",
-      });
     }
 
     const endpointsPath = path.join(__dirname, "../endpoints.txt");
@@ -365,6 +359,18 @@ router.put("/api/endpoints", verifyMasterKey, async (req, res) => {
     // Validate index is a plain positive integer to prevent RegExp injection
     if (!/^\d+$/.test(String(index)))
       return res.status(400).json({ error: "Invalid endpoint index" });
+
+    // Validate URL is well-formed and uses http or https
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+        return res
+          .status(400)
+          .json({ error: "Endpoint URL must use HTTP or HTTPS" });
+      }
+    } catch (_) {
+      return res.status(400).json({ error: "Invalid URL" });
+    }
 
     const endpointsPath = path.join(__dirname, "../endpoints.txt");
     const content = fs.readFileSync(endpointsPath, "utf-8");

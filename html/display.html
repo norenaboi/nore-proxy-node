@@ -1,391 +1,407 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Model List</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-            background: #fafafa;
-            color: #333;
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        
-        .back-link {
-            color: #888;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .back-link:hover {
-            color: #c0392b;
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px 0 40px;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 40px;
-        }
-        
-        h1 {
-            font-size: 24px;
-            font-weight: 300;
-        }
-        
-        .subtitle {
-            color: #888;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        
-        .loading {
-            text-align: center;
-            color: #888;
-            padding: 40px;
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Model List</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-        /* Notification */
-        .copy-notification {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            border-radius:10px;
-            color: var(--darker-bg);
-            padding: 10px 25px;
-            border-radius: 5px;
-            border: solid 2px black;
-            font-weight: bold;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 100;
-            font-family: 'Cinzel', serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        
-        .copy-notification.show { transform: translateX(-50%) translateY(0); }
-        }
-    </style>
-    <style>
-        /* Divider - simplified */
-        .divider {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 30px 0;
-            gap: 20px;
-        }
-    
-        .divider-line { 
-            height: 1px; 
-            width: 100px; 
-            background: #eee;
-        }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+                background: #fafafa;
+                color: #333;
+                min-height: 100vh;
+                padding: 40px 20px;
+            }
 
-        /* Grid Layout */
-        .models-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
+            .container {
+                max-width: 900px;
+                margin: 0 auto;
+            }
 
-        /* Category Card - Light version */
-        .category-card {
-            background: white;
-            border: 1px solid black;
-            border-radius: 8px;
-            overflow: hidden;
-            transition: border-color 0.2s;
-        }
+            .back-link {
+                color: #888;
+                text-decoration: none;
+                font-size: 14px;
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+            }
 
-        .category-card:hover {
-            border-color: gray;
-        }
+            .back-link:hover {
+                color: #c0392b;
+            }
 
-        .category-header {
-            padding: 15px 20px;
-            background: #fafafa;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            header {
+                text-align: center;
+                padding: 20px 0 40px;
+                border-bottom: 1px solid #eee;
+                margin-bottom: 40px;
+            }
 
-        .category-title {
-            color: black;
-            font-size: 14px;
-            font-weight: 500;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+            h1 {
+                font-size: 24px;
+                font-weight: 300;
+            }
 
-        .model-count {
-            background: #f5f5f5;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #888;
-        }
+            .subtitle {
+                color: #888;
+                font-size: 14px;
+                margin-top: 5px;
+            }
 
-        /* Models List */
-        .models-container {
-            padding: 10px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
+            .loading {
+                text-align: center;
+                color: #888;
+                padding: 40px;
+            }
 
-        .model-item {
-            padding: 10px 15px;
-            margin: 3px 0;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-            color: #555;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+            /* Notification */
+            .copy-notification {
+                position: fixed;
+                bottom: 30px;
+                left: 50%;
+                transform: translateX(-50%) translateY(100px);
+                border-radius:10px;
+                color: var(--darker-bg);
+                padding: 10px 25px;
+                border-radius: 5px;
+                border: solid 2px black;
+                font-weight: bold;
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                z-index: 100;
+                font-family: 'Cinzel', serif;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
 
-        .model-item:hover {
-            background: #f5f5f5;
-            color: gray;
-        }
+            .copy-notification.show { transform: translateX(-50%) translateY(0); }
+            }
+        </style>
+        <style>
+            /* Divider - simplified */
+            .divider {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 30px 0;
+                gap: 20px;
+            }
 
-        .model-item i {
-            opacity: 0;
-            transition: 0.2s;
-            color: gray;
-        }
+            .divider-line {
+                height: 1px;
+                width: 100px;
+                background: #eee;
+            }
 
-        .model-item:hover i { 
-            opacity: 1; 
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <a href="/" class="back-link">← Return to main menu</a>
-        
-        <header>
-            <h1>Models</h1>
-            <p class="subtitle">Select your model of choice</p>
-        </header>
+            /* Grid Layout */
+            .models-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+            }
 
-        <div id="model-list-container">
-            <!-- Models will be injected here -->
-            <div style="text-align: center; color: var(--gold);">
-                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
-                <p style="margin-top: 15px;">Loading models...</p>
+            /* Category Card - Light version */
+            .category-card {
+                background: white;
+                border: 1px solid black;
+                border-radius: 8px;
+                overflow: hidden;
+                transition: border-color 0.2s;
+            }
+
+            .category-card:hover {
+                border-color: gray;
+            }
+
+            .category-header {
+                padding: 15px 20px;
+                background: #fafafa;
+                border-bottom: 1px solid #eee;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .category-title {
+                color: black;
+                font-size: 14px;
+                font-weight: 500;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+            }
+
+            .model-count {
+                background: #f5f5f5;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                color: #888;
+            }
+
+            /* Models List */
+            .models-container {
+                padding: 10px;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .model-item {
+                padding: 10px 15px;
+                margin: 3px 0;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+                font-size: 14px;
+                color: #555;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .model-item:hover {
+                background: #f5f5f5;
+                color: gray;
+            }
+
+            .model-item i {
+                opacity: 0;
+                transition: 0.2s;
+                color: gray;
+            }
+
+            .model-item:hover i {
+                opacity: 1;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <a href="/" class="back-link">← Return to main menu</a>
+
+            <header>
+                <h1>Models</h1>
+                <p class="subtitle">Select your model of choice</p>
+            </header>
+
+            <div id="model-list-container">
+                <!-- Models will be injected here -->
+                <div style="text-align: center; color: var(--gold)">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top: 15px">Loading models...</p>
+                </div>
             </div>
         </div>
-    </div>
-    
-    <div id="notification" class="copy-notification" data-translate="notification">
-        <i class="fa-solid fa-check"></i> Copied to Clipboard
-    </div>
 
-    <script>
-        // Model Logic
-        function categorizeModels(models) {
-            const categories = {
-                'Sonnet': [],
-                'Opus': [],
-                'Claude': [],
-                'DeepSeek': [],
-                'Gemini': [],
-                'GPT': [],
-                'GLM': [],
-                'Grok': [],
-                'Kimi': [],
-                'Others': []
-            };
+        <div
+            id="notification"
+            class="copy-notification"
+            data-translate="notification"
+        >
+            <i class="fa-solid fa-check"></i> Copied to Clipboard
+        </div>
 
-            models.forEach(model => {
-                const modelName = typeof model === 'string' ? model : (model.id || model.name || model.model);
-                const lowerName = modelName.toLowerCase();
+        <script>
+            // Model Logic
+            function categorizeModels(models) {
+                const categories = {
+                    Sonnet: [],
+                    Opus: [],
+                    Claude: [],
+                    DeepSeek: [],
+                    Gemini: [],
+                    GPT: [],
+                    GLM: [],
+                    Grok: [],
+                    Kimi: [],
+                    Others: [],
+                };
 
-                // Order matters here. Specific detections first.
-                
-                if (lowerName.includes('gemini')) {
-                    categories['Gemini'].push(modelName);
-                } 
-                else if (lowerName.includes('gpt') || lowerName.includes('chatgpt') || lowerName.startsWith('o')) {
-                    categories['GPT'].push(modelName);
-                } 
-                else if (lowerName.includes('claude')) {
-                    categories['Claude'].push(modelName);
-                } 
-                else if (lowerName.includes('deepseek')) {
-                    categories['DeepSeek'].push(modelName);
-                } 
-                else if (lowerName.includes('glm')) {
-                    categories['GLM'].push(modelName);
-                } 
-                else if (lowerName.includes('grok')) {
-                    categories['Grok'].push(modelName);
-                } 
-                else if (lowerName.includes('kimi')) {
-                    categories['Kimi'].push(modelName);
-                } 
-                else {
-                    categories['Others'].push(modelName);
-                }
-            });
+                models.forEach((model) => {
+                    const modelName =
+                        typeof model === "string"
+                            ? model
+                            : model.id || model.name || model.model;
+                    const lowerName = modelName.toLowerCase();
 
-            // Remove empty categories
-            Object.keys(categories).forEach(key => {
-                if (categories[key].length === 0) {
-                    delete categories[key];
-                }
-            });
+                    // Order matters here. Specific detections first.
 
-            return categories;
-        }
-
-        function getCategoryIcon(category) {
-            const icons = {
-                'Sonnet': 'fa-pen-nib',
-                'Opus': 'fa-scroll',
-                'GPT': 'fa-brain',
-                'Claude': 'fa-feather',
-                'DeepSeek': 'fa-magnifying-glass',
-                'Gemini': 'fa-star',
-                'Others': 'fa-box-open'
-            };
-            return icons[category] || 'fa-microchip';
-        }
-
-        function createCategoryCard(categoryName, models, index) {
-            const card = document.createElement('div');
-            card.className = `category-card`;
-            card.style.animationDelay = `${index * 0.1}s`;
-
-            // Create header
-            const header = document.createElement('div');
-            header.className = 'category-header';
-    
-            const title = document.createElement('h3');
-            title.className = 'category-title';
-            const iconClass = getCategoryIcon(categoryName);
-            
-            title.innerHTML = `
-                <i class="fa-solid ${iconClass}"></i>
-                ${categoryName}
-                <span class="model-count">${models.length}</span>
-            `;
-    
-            header.appendChild(title);
-
-            // Create models container
-            const modelsContainer = document.createElement('div');
-            modelsContainer.className = 'models-container';
-
-            // Add each model
-            models.forEach((model, modelIndex) => {
-                const modelItem = document.createElement('div');
-                modelItem.className = 'model-item';
-                modelItem.style.animationDelay = `${(index * 0.1) + (modelIndex * 0.02)}s`;
-        
-                const modelName = document.createElement('span');
-                modelName.textContent = model;
-                
-                const copyIcon = document.createElement('i');
-                copyIcon.className = 'fa-regular fa-copy';
-
-                modelItem.appendChild(modelName);
-                modelItem.appendChild(copyIcon);
-        
-                // Add click event
-                modelItem.addEventListener('click', () => {
-                    navigator.clipboard.writeText(model);
-                    showNotification();
-                    
-                    // Flash effect
-                    modelItem.style.background = 'rgba(212, 175, 55, 0.3)';
-                    setTimeout(() => {
-                        modelItem.style.background = '';
-                    }, 200);
+                    if (lowerName.includes("gemini")) {
+                        categories["Gemini"].push(modelName);
+                    } else if (
+                        lowerName.includes("claude") ||
+                        lowerName.includes("sonnet") ||
+                        lowerName.includes("opus")
+                    ) {
+                        categories["Claude"].push(modelName);
+                    } else if (
+                        lowerName.includes("gpt") ||
+                        lowerName.includes("chatgpt") ||
+                        lowerName.startsWith("o")
+                    ) {
+                        categories["GPT"].push(modelName);
+                    } else if (lowerName.includes("deepseek")) {
+                        categories["DeepSeek"].push(modelName);
+                    } else if (lowerName.includes("glm")) {
+                        categories["GLM"].push(modelName);
+                    } else if (lowerName.includes("grok")) {
+                        categories["Grok"].push(modelName);
+                    } else if (lowerName.includes("kimi")) {
+                        categories["Kimi"].push(modelName);
+                    } else {
+                        categories["Others"].push(modelName);
+                    }
                 });
-        
-                modelsContainer.appendChild(modelItem);
-            });
 
-            card.appendChild(header);
-            card.appendChild(modelsContainer);
-    
-            return card;
-        }
+                // Remove empty categories
+                Object.keys(categories).forEach((key) => {
+                    if (categories[key].length === 0) {
+                        delete categories[key];
+                    }
+                });
 
-        function showNotification() {
-            const notif = document.getElementById('notification');
-            notif.classList.add('show');
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, 2000);
-        }
+                return categories;
+            }
 
-        async function displayModels() {
-            const modelsContainer = document.getElementById('model-list-container');
-            
-            try {
-                const response = await fetch('/v1/models');
-                const data = await response.json();
-        
-                if (!modelsContainer) return;
-        
-                // Clear loading state
-                modelsContainer.innerHTML = '';
-        
-                const models = data.data || data.models || data;
-        
-                if (Array.isArray(models) && models.length > 0) {
-                    const categorizedModels = categorizeModels(models);
-            
-                    const gridContainer = document.createElement('div');
-                    gridContainer.className = 'models-grid';
-            
-                    Object.entries(categorizedModels).forEach(([categoryName, categoryModels], index) => {
-                        const card = createCategoryCard(categoryName, categoryModels, index);
-                        gridContainer.appendChild(card);
+            function getCategoryIcon(category) {
+                const icons = {
+                    Sonnet: "fa-pen-nib",
+                    Opus: "fa-scroll",
+                    GPT: "fa-brain",
+                    Claude: "fa-feather",
+                    DeepSeek: "fa-magnifying-glass",
+                    Gemini: "fa-star",
+                    Others: "fa-box-open",
+                };
+                return icons[category] || "fa-microchip";
+            }
+
+            function createCategoryCard(categoryName, models, index) {
+                const card = document.createElement("div");
+                card.className = `category-card`;
+                card.style.animationDelay = `${index * 0.1}s`;
+
+                // Create header
+                const header = document.createElement("div");
+                header.className = "category-header";
+
+                const title = document.createElement("h3");
+                title.className = "category-title";
+                const iconClass = getCategoryIcon(categoryName);
+
+                title.innerHTML = `
+                    <i class="fa-solid ${iconClass}"></i>
+                    ${categoryName}
+                    <span class="model-count">${models.length}</span>
+                `;
+
+                header.appendChild(title);
+
+                // Create models container
+                const modelsContainer = document.createElement("div");
+                modelsContainer.className = "models-container";
+
+                // Add each model
+                models.forEach((model, modelIndex) => {
+                    const modelItem = document.createElement("div");
+                    modelItem.className = "model-item";
+                    modelItem.style.animationDelay = `${index * 0.1 + modelIndex * 0.02}s`;
+
+                    const modelName = document.createElement("span");
+                    modelName.textContent = model;
+
+                    const copyIcon = document.createElement("i");
+                    copyIcon.className = "fa-regular fa-copy";
+
+                    modelItem.appendChild(modelName);
+                    modelItem.appendChild(copyIcon);
+
+                    // Add click event
+                    modelItem.addEventListener("click", () => {
+                        navigator.clipboard.writeText(model);
+                        showNotification();
+
+                        // Flash effect
+                        modelItem.style.background = "rgba(212, 175, 55, 0.3)";
+                        setTimeout(() => {
+                            modelItem.style.background = "";
+                        }, 200);
                     });
-            
-                    modelsContainer.appendChild(gridContainer);
-                } else {
+
+                    modelsContainer.appendChild(modelItem);
+                });
+
+                card.appendChild(header);
+                card.appendChild(modelsContainer);
+
+                return card;
+            }
+
+            function showNotification() {
+                const notif = document.getElementById("notification");
+                notif.classList.add("show");
+                setTimeout(() => {
+                    notif.classList.remove("show");
+                }, 2000);
+            }
+
+            async function displayModels() {
+                const modelsContainer = document.getElementById(
+                    "model-list-container",
+                );
+
+                try {
+                    const response = await fetch("/v1/models");
+                    const data = await response.json();
+
+                    if (!modelsContainer) return;
+
+                    // Clear loading state
+                    modelsContainer.innerHTML = "";
+
+                    const models = data.data || data.models || data;
+
+                    if (Array.isArray(models) && models.length > 0) {
+                        const categorizedModels = categorizeModels(models);
+
+                        const gridContainer = document.createElement("div");
+                        gridContainer.className = "models-grid";
+
+                        Object.entries(categorizedModels).forEach(
+                            ([categoryName, categoryModels], index) => {
+                                const card = createCategoryCard(
+                                    categoryName,
+                                    categoryModels,
+                                    index,
+                                );
+                                gridContainer.appendChild(card);
+                            },
+                        );
+
+                        modelsContainer.appendChild(gridContainer);
+                    } else {
+                        modelsContainer.innerHTML = `
+                            <div style="text-align: center; margin-top: 50px;">
+                                <i class="fa-solid fa-skull-crossbones fa-3x" style="color: gray"></i>
+                                <p style="margin-top: 20px; font-size: 1.2rem;">No model found.</p>
+                            </div>`;
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch models", error);
                     modelsContainer.innerHTML = `
                         <div style="text-align: center; margin-top: 50px;">
-                            <i class="fa-solid fa-skull-crossbones fa-3x" style="color: gray"></i>
-                            <p style="margin-top: 20px; font-size: 1.2rem;">No model found.</p>
+                            <i class="fa-solid fa-triangle-exclamation fa-3x" style="color: red"></i>
+                            <p style="margin-top: 20px; font-size: 1.2rem;">Failed to retrieve models.</p>
                         </div>`;
                 }
-            } catch (error) {
-                console.error("Failed to fetch models", error);
-                modelsContainer.innerHTML = `
-                    <div style="text-align: center; margin-top: 50px;">
-                        <i class="fa-solid fa-triangle-exclamation fa-3x" style="color: red"></i>
-                        <p style="margin-top: 20px; font-size: 1.2rem;">Failed to retrieve models.</p>
-                    </div>`;
             }
-        }
 
-        document.addEventListener('DOMContentLoaded', displayModels);
-    </script>
-</body>
+            document.addEventListener("DOMContentLoaded", displayModels);
+        </script>
+    </body>
 </html>

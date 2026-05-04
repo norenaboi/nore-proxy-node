@@ -1,2 +1,3 @@
 #!/bin/bash
-npm start
+set -e
+exec node server.js

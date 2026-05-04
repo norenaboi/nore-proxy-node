@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { verifyMasterKey } from "../middleware/auth.js";
+import { adminRateLimit } from "../middleware/rateLimiter.js";
 import apiKeyManager from "../services/apiKeyManager.js";
 import logManager from "../services/logManager.js";
 import Config from "../config/index.js";
@@ -13,6 +14,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
+
+// Apply IP-level rate limiting to all admin routes to limit brute-force attempts
+router.use(adminRateLimit);
 
 /*
     GET for logs in database
@@ -103,7 +107,7 @@ router.get("/api/keys", verifyMasterKey, async (req, res) => {
     res.json({ keys });
   } catch (error) {
     console.error("Error loading keys:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -127,7 +131,7 @@ router.post("/api/keys", verifyMasterKey, async (req, res) => {
     res.json({ message: "API key added successfully" });
   } catch (error) {
     console.error("Error adding key:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -165,7 +169,7 @@ router.delete("/api/keys", verifyMasterKey, async (req, res) => {
     res.json({ message: "API key deleted successfully" });
   } catch (error) {
     console.error("Error deleting key:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -278,10 +282,17 @@ router.get("/api/endpoints", verifyMasterKey, async (req, res) => {
       const urlMatch = lines[i]?.match(/^V(\d+)_URL=(.+)$/);
       const tokenMatch = lines[i + 1]?.match(/^V(\d+)_TOKEN=(.+)$/);
       if (urlMatch && tokenMatch && urlMatch[1] === tokenMatch[1]) {
+        const rawToken = tokenMatch[2];
+        const maskedToken =
+          rawToken.length > 8
+            ? rawToken.substring(0, 4) +
+              "****" +
+              rawToken.substring(rawToken.length - 4)
+            : "****";
         endpoints.push({
           index: parseInt(urlMatch[1]),
           url: urlMatch[2],
-          token: tokenMatch[2],
+          token: maskedToken,
         });
       }
     }
@@ -299,6 +310,24 @@ router.post("/api/endpoints", verifyMasterKey, async (req, res) => {
     const token = (req.body.token || "").trim();
     if (!url || !token)
       return res.status(400).json({ error: "URL and token required" });
+
+    // Validate URL scheme to prevent SSRF against internal network addresses
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (_) {
+      return res.status(400).json({ error: "Invalid URL" });
+    }
+    if (parsed.protocol !== "https:") {
+      return res.status(400).json({ error: "Endpoint URL must use HTTPS" });
+    }
+    const blockedHosts =
+      /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/i;
+    if (blockedHosts.test(parsed.hostname)) {
+      return res.status(400).json({
+        error: "Endpoint URL points to a disallowed internal address",
+      });
+    }
 
     const endpointsPath = path.join(__dirname, "../endpoints.txt");
     const content = fs.existsSync(endpointsPath)
@@ -330,18 +359,28 @@ router.put("/api/endpoints", verifyMasterKey, async (req, res) => {
     const index = req.body.index;
     const url = (req.body.url || "").trim();
     const token = (req.body.token || "").trim();
-    if (!index || !url || !token)
-      return res.status(400).json({ error: "Index, URL and token required" });
+    if (!index || !url)
+      return res.status(400).json({ error: "Index and URL are required" });
+
+    // Validate index is a plain positive integer to prevent RegExp injection
+    if (!/^\d+$/.test(String(index)))
+      return res.status(400).json({ error: "Invalid endpoint index" });
 
     const endpointsPath = path.join(__dirname, "../endpoints.txt");
     const content = fs.readFileSync(endpointsPath, "utf-8");
 
-    let updated = content
-      .replace(new RegExp(`^V${index}_URL=.+$`, "m"), `V${index}_URL=${url}`)
-      .replace(
+    let updated = content.replace(
+      new RegExp(`^V${index}_URL=.+$`, "m"),
+      `V${index}_URL=${url}`,
+    );
+
+    // Only replace token if a new (non-masked) one was provided
+    if (token && !token.includes("****")) {
+      updated = updated.replace(
         new RegExp(`^V${index}_TOKEN=.+$`, "m"),
         `V${index}_TOKEN=${token}`,
       );
+    }
 
     if (updated === content)
       return res.status(404).json({ error: "Endpoint not found" });
@@ -349,7 +388,8 @@ router.put("/api/endpoints", verifyMasterKey, async (req, res) => {
     fs.writeFileSync(endpointsPath, updated);
     res.json({ message: "Endpoint updated" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error updating endpoint:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -358,6 +398,10 @@ router.delete("/api/endpoints", verifyMasterKey, async (req, res) => {
   try {
     const index = req.body.index;
     if (!index) return res.status(400).json({ error: "Index required" });
+
+    // Validate index is a plain positive integer to prevent injection
+    if (!/^\d+$/.test(String(index)))
+      return res.status(400).json({ error: "Invalid endpoint index" });
 
     const endpointsPath = path.join(__dirname, "../endpoints.txt");
     const content = fs.readFileSync(endpointsPath, "utf-8");
@@ -396,7 +440,8 @@ router.get("/api/settings", verifyMasterKey, (req, res) => {
   try {
     res.json({ settings: settingsManager.getAll() });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error loading settings:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

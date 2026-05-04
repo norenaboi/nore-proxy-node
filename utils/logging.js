@@ -108,7 +108,7 @@ export function logRequestEnd(
   tokenUsage.labels({ model, token_type: "input" }).inc(inputTokens);
   tokenUsage.labels({ model, token_type: "output" }).inc(outputTokens);
 
-  // Store request details
+  // Store request details — no message content or response body to limit PII exposure
   const details = {
     request_id: requestId,
     timestamp: req.start_time,
@@ -119,8 +119,6 @@ export function logRequestEnd(
     output_tokens: outputTokens,
     error,
     request_params: req.params || {},
-    request_messages: req.messages || [],
-    response_content: responseContent.substring(0, 5000),
     headers: {},
   };
   requestDetailsStorage.add(details);
@@ -137,20 +135,28 @@ export function logRequestEnd(
     output_tokens: outputTokens,
     error,
     params: req.params || {},
-    api_key: apiKey || req.api_key,
+    api_key: maskKey(apiKey || req.api_key),
   };
   logManager.writeRequestLog(logEntry);
 
   realtimeStats.activeRequests.delete(requestId);
 }
 
+function maskKey(key) {
+  if (!key || key.length <= 8) return key ? "****" : key;
+  return key.substring(0, 5) + "..." + key.substring(key.length - 3);
+}
+
 export function logError(requestId, errorType, errorMessage, stackTrace = "") {
+  // Log full stack trace to console only — not persisted to DB
+  if (stackTrace) console.error(`[${requestId}] ${errorType}:`, stackTrace);
+
   const errorData = {
     timestamp: Date.now() / 1000,
     request_id: requestId,
     error_type: errorType,
     error_message: errorMessage,
-    stack_trace: stackTrace,
+    // stack_trace intentionally omitted from DB storage
   };
 
   realtimeStats.addRecentError(errorData);

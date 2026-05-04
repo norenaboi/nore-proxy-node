@@ -805,7 +805,10 @@
             document.getElementById('modalTitle').textContent = 'Edit Endpoint';
             document.getElementById('modalSubmit').textContent = 'Save Changes';
             document.getElementById('urlInput').value = endpoint.url;
-            document.getElementById('tokenInput').value = endpoint.token;
+            // Token is masked server-side — clear the field so the user
+            // can optionally enter a new token; leaving it blank keeps the existing one.
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('tokenInput').placeholder = 'Leave blank to keep existing token';
             document.getElementById('endpointModal').classList.add('active');
         }
 

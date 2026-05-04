@@ -129,10 +129,6 @@ async function streamFromBackend(
   const { url: backendUrl, token: backendToken, actualModel } = endpointInfo;
   const fullUrl = `${backendUrl}/chat/completions`;
 
-  console.log(`Request model: ${modelName}`);
-  console.log(`Actual model: ${actualModel}`);
-  console.log(`Endpoint URL: ${fullUrl}`);
-
   // Set streaming headers
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -313,10 +309,6 @@ async function makeBackendRequest(
 
   const { url: backendUrl, token: backendToken, actualModel } = endpointInfo;
   const fullUrl = `${backendUrl}/chat/completions`;
-
-  console.log(`Request model: ${modelName}`);
-  console.log(`Actual model: ${actualModel}`);
-  console.log(`Endpoint URL: ${fullUrl}`);
 
   try {
     let messages = openaiReq.messages || [];

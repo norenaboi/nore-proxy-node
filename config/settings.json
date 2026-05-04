@@ -1,4 +1,4 @@
 {
-  "promptCachingEnabled": true,
+  "promptCachingEnabled": false,
   "promptCachingDepth": 2
 }

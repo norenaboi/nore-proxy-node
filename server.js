@@ -1,24 +1,61 @@
-import express from 'express';
-import cors from 'cors';
-import Config from './config/index.js';
-import { loadModelsFromFile, MODEL_REGISTRY } from './utils/helpers.js';
-import apiKeyManager from './services/apiKeyManager.js';
-import realtimeStats from './services/realtimeStats.js';
-import { activeRequestsGauge, modelRegistryGauge } from './services/metricsService.js';
-import prometheusClient from './services/metricsService.js';
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import crypto from "crypto";
+import Config from "./config/index.js";
+import { loadModelsFromFile, MODEL_REGISTRY } from "./utils/helpers.js";
+import apiKeyManager from "./services/apiKeyManager.js";
+import realtimeStats from "./services/realtimeStats.js";
+import {
+  activeRequestsGauge,
+  modelRegistryGauge,
+} from "./services/metricsService.js";
+import prometheusClient from "./services/metricsService.js";
 
 // Import routes
-import chatRoutes from './routes/chat.js';
-import modelsRoutes from './routes/models.js';
-import statsRoutes, { setStartupTime } from './routes/stats.js';
-import adminRoutes from './routes/admin.js';
-import pagesRoutes from './routes/pages.js';
+import rateLimiter from "./middleware/rateLimiter.js";
+import chatRoutes from "./routes/chat.js";
+import modelsRoutes from "./routes/models.js";
+import statsRoutes, { setStartupTime } from "./routes/stats.js";
+import adminRoutes from "./routes/admin.js";
+import pagesRoutes from "./routes/pages.js";
 
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        // All HTML pages use inline <script> and <style> tags
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
+          "https://fonts.googleapis.com",
+        ],
+        fontSrc: [
+          "'self'",
+          "https://cdnjs.cloudflare.com",
+          "https://fonts.gstatic.com",
+        ],
+        imgSrc: ["'self'", "data:"],
+        connectSrc: ["'self'"],
+      },
+    },
+  }),
+);
+// Allow CORS_ORIGIN env var to restrict origins; defaults to '*' for open proxy use
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+app.use(express.json({ limit: "8mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Global state
@@ -37,6 +74,9 @@ async function initialize() {
   // Load models from file
   loadModelsFromFile();
 
+  // Start rate limiter cleanup
+  rateLimiter.startCleanup();
+
   // Start background tasks
   startBackgroundTasks();
 }
@@ -45,7 +85,7 @@ function startBackgroundTasks() {
   // Daily reset task - check every hour and reset at midnight
   const dailyResetTask = setInterval(() => {
     if (SHUTTING_DOWN) return;
-    
+
     // Check if we need to reset (new day)
     apiKeyManager.resetDaily();
   }, 3600000); // Check every hour
@@ -63,9 +103,9 @@ function startBackgroundTasks() {
       activeRequestsGauge.set(realtimeStats.activeRequests.size);
       modelRegistryGauge.set(Object.keys(MODEL_REGISTRY).length);
 
-      console.log(`Cleanup task completed. Active requests: ${realtimeStats.activeRequests.size}`);
+      // Cleanup complete (debug: active requests = realtimeStats.activeRequests.size)
     } catch (error) {
-      console.error('Error in cleanup task:', error);
+      console.error("Error in cleanup task:", error);
     }
   }, Config.CLEANUP_INTERVAL * 1000);
 
@@ -87,36 +127,43 @@ app.use(statsRoutes);
 app.use(adminRoutes);
 app.use(pagesRoutes);
 
-// Prometheus metrics endpoint
-app.get('/metrics', async (req, res) => {
+// Prometheus metrics endpoint — protected by master key
+app.get("/metrics", async (req, res) => {
+  const provided = req.headers.authorization || "";
+  const expected = Config.MASTER_KEY;
+  let authorized = false;
   try {
-    res.set('Content-Type', prometheusClient.register.contentType);
+    authorized =
+      provided.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  } catch (_) {}
+  if (!authorized) return res.status(403).end("Forbidden");
+
+  try {
+    res.set("Content-Type", prometheusClient.register.contentType);
     const metrics = await prometheusClient.register.metrics();
     res.end(metrics);
   } catch (error) {
-    res.status(500).end(error.message);
+    console.error("Metrics error:", error);
+    res.status(500).end("Internal server error");
   }
 });
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    uptime: Date.now() / 1000 - startupTime,
-    active_requests: realtimeStats.activeRequests.size
-  });
+app.get("/health", (req, res) => {
+  res.json({ status: "healthy" });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: "Not found" });
 });
 
-// Error handler
+// Error handler — never leak raw exception messages to clients
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
+  console.error("Unhandled error:", err);
   res.status(err.statusCode || 500).json({
-    error: err.message || 'Internal server error'
+    error: err.statusCode ? err.message : "Internal server error",
   });
 });
 
@@ -128,40 +175,48 @@ function gracefulShutdown(signal) {
   stopBackgroundTasks();
 
   server.close(() => {
-    console.log('HTTP server closed.');
+    console.log("HTTP server closed.");
     process.exit(0);
   });
 
   // Force close after 10 seconds
   setTimeout(() => {
-    console.error('Could not close connections in time, forcefully shutting down');
+    console.error(
+      "Could not close connections in time, forcefully shutting down",
+    );
     process.exit(1);
   }, 10000);
 }
 
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 // Start server
 const server = app.listen(Config.PORT, Config.HOST, async () => {
   await initialize();
 
-  const datetime = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  
-  console.log('\n' + '='.repeat(60));
-  console.log('='.repeat(20) + '     NORE PROXY     ' + '='.repeat(20));
-  console.log('='.repeat(60));
+  const datetime = new Date().toISOString().replace("T", " ").slice(0, 19);
+
+  console.log("\n" + "=".repeat(60));
+  console.log("=".repeat(20) + "     NORE PROXY     " + "=".repeat(20));
+  console.log("=".repeat(60));
   console.log(`  Launched at:    ${datetime}`);
   console.log(`  Port:           ${Config.PORT}`);
-  console.log(`  Rate Limits:    ${Config.RPM_DEFAULT} RPM / ${Config.RPD_DEFAULT} RPD`);
-  console.log(`  Endpoints:      Configured ${Object.keys(Config.ENDPOINTS).length} endpoints`);
-  console.log(`  Models:         Loaded ${Object.keys(MODEL_REGISTRY).length} models`);
+  console.log(
+    `  Rate Limits:    ${Config.RPM_DEFAULT} RPM / ${Config.RPD_DEFAULT} RPD`,
+  );
+  console.log(
+    `  Endpoints:      Configured ${Object.keys(Config.ENDPOINTS).length} endpoints`,
+  );
+  console.log(
+    `  Models:         Loaded ${Object.keys(MODEL_REGISTRY).length} models`,
+  );
   console.log(`  Main Page:      http://localhost:${Config.PORT}`);
   console.log(`  Login:          http://localhost:${Config.PORT}/admin/login`);
   console.log(`  API Base URL:   http://localhost:${Config.PORT}/v1`);
-  console.log('='.repeat(60));
-  console.log('='.repeat(60));
-  console.log(' '.repeat(60));
+  console.log("=".repeat(60));
+  console.log("=".repeat(60));
+  console.log(" ".repeat(60));
 });
 
 export default app;

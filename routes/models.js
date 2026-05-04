@@ -2,7 +2,6 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { verifyApiKey } from "../middleware/auth.js";
 import { MODEL_REGISTRY } from "../utils/helpers.js";
 
 const __filename = fileURLToPath(import.meta.url);

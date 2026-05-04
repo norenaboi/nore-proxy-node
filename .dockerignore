@@ -1,0 +1,15 @@
+node_modules
+
+# Secrets and config — pass these at runtime via env vars / Docker secrets
+endpoints.txt
+.env
+
+# Data files that should not be baked into images
+logs/
+allowed_models.txt
+
+# Dev / docs
+*.sh
+*.md
+.gitignore
+.dockerignore

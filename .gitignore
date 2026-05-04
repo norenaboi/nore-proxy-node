@@ -60,6 +60,4 @@ Desktop.ini
 .cache/
 
 # Docker
-.dockerignore
-Dockerfile
 docker-rebuild.sh

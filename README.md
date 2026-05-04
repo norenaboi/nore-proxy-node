@@ -40,10 +40,12 @@ npm start
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `PORT` | Server port | 8741 |
-| `MASTER_KEY` | Admin authentication key | admin |
+| `PORT` | Server port | 3000 |
+| `MASTER_KEY` | Admin authentication key | mypasswordissafe |
 | `RPD_DEFAULT` | Requests per day limit | 500 |
 | `RPM_DEFAULT` | Requests per minute limit | 10 |
+
+The server will not initiate if your `MASTER_KEY` is shorter than 16 characters.
 
 ## Frontend
 

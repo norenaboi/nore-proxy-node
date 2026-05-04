@@ -58,3 +58,8 @@ Desktop.ini
 *.tmp
 *.temp
 .cache/
+
+# Docker
+.dockerignore
+Dockerfile
+docker-rebuild.sh

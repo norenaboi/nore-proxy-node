@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import apiKeyManager from "../services/apiKeyManager.js";
 import Config from "../config/index.js";
+import { validateSession } from "../services/sessionManager.js";
 
 export function verifyApiKey(req, res, next) {
   const authorization = req.headers.authorization;
@@ -60,5 +61,13 @@ export function verifyMasterKey(req, res, next) {
     return res.status(403).json({ error: "Invalid master key" });
   }
 
+  next();
+}
+
+export function verifySession(req, res, next) {
+  const sessionId = req.cookies?.adminSession;
+  if (!validateSession(sessionId)) {
+    return res.status(401).json({ error: "Unauthorized. Please log in." });
+  }
   next();
 }

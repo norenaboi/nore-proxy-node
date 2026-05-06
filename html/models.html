@@ -697,19 +697,13 @@
     <div id="toast" class="toast"></div>
     </main>
     <script>
-        const MASTER_KEY = sessionStorage.getItem('adminMasterKey');
         let models = [];
         let editingModel = null;
         let deletingModel = null;
 
-        // Check authentication
-        if (!MASTER_KEY) {
-            window.location.href = '/admin/login';
-        }
-
         // Logout
-        function logout() {
-            sessionStorage.removeItem('adminMasterKey');
+        async function logout() {
+            await fetch('/admin/logout', { method: 'POST' }).catch(() => {});
             window.location.href = '/admin/login';
         }
 
@@ -718,11 +712,7 @@
 
         async function loadModels() {
             try {
-                const response = await fetch('/api/models', {
-                    headers: {
-                        'Authorization': MASTER_KEY
-                    }
-                });
+                const response = await fetch('/api/models');
 
                 if (!response.ok) throw new Error('Failed to load models');
 
@@ -831,7 +821,6 @@
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': MASTER_KEY
                         },
                         body: JSON.stringify({ oldModel: editingModel, newModel: modelInput })
                     });
@@ -848,7 +837,6 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': MASTER_KEY
                         },
                         body: JSON.stringify({ model: modelInput })
                     });
@@ -876,7 +864,6 @@
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': MASTER_KEY
                     },
                     body: JSON.stringify({ model: deletingModel })
                 });

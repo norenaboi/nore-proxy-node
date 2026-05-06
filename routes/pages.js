@@ -2,11 +2,30 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { validateSession } from "../services/sessionManager.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = express.Router();
+
+function requireSession(req, res, next) {
+  const cookies = {};
+  const header = req.headers.cookie;
+  if (header) {
+    for (const part of header.split(";")) {
+      const idx = part.indexOf("=");
+      if (idx < 0) continue;
+      cookies[part.slice(0, idx).trim()] = decodeURIComponent(
+        part.slice(idx + 1).trim(),
+      );
+    }
+  }
+  if (!validateSession(cookies.adminSession)) {
+    return res.redirect("/admin/login");
+  }
+  next();
+}
 
 function serveHtml(res, filename) {
   const htmlPath = path.join(__dirname, "..", "html", filename);
@@ -44,26 +63,40 @@ router.get("/admin", (req, res) => {
 });
 
 router.get("/admin/login", (req, res) => {
+  const cookies = {};
+  const header = req.headers.cookie;
+  if (header) {
+    for (const part of header.split(";")) {
+      const idx = part.indexOf("=");
+      if (idx < 0) continue;
+      cookies[part.slice(0, idx).trim()] = decodeURIComponent(
+        part.slice(idx + 1).trim(),
+      );
+    }
+  }
+  if (validateSession(cookies.adminSession)) {
+    return res.redirect("/admin/dashboard");
+  }
   serveHtml(res, "login.html");
 });
 
-router.get("/admin/dashboard", (req, res) => {
+router.get("/admin/dashboard", requireSession, (req, res) => {
   serveHtml(res, "dashboard.html");
 });
 
-router.get("/admin/keys", (req, res) => {
+router.get("/admin/keys", requireSession, (req, res) => {
   serveHtml(res, "keys.html");
 });
 
-router.get("/admin/models", (req, res) => {
+router.get("/admin/models", requireSession, (req, res) => {
   serveHtml(res, "models.html");
 });
 
-router.get("/admin/endpoints", (req, res) => {
+router.get("/admin/endpoints", requireSession, (req, res) => {
   serveHtml(res, "endpoints.html");
 });
 
-router.get("/admin/settings", (req, res) => {
+router.get("/admin/settings", requireSession, (req, res) => {
   serveHtml(res, "settings.html");
 });
 

@@ -1,4 +1,5 @@
 import logManager from "../services/logManager.js";
+import apiKeyManager from "../services/apiKeyManager.js";
 import realtimeStats from "../services/realtimeStats.js";
 import requestDetailsStorage from "../services/requestDetailsStorage.js";
 import performanceMonitor from "../services/performanceMonitor.js";
@@ -124,6 +125,7 @@ export function logRequestEnd(
   requestDetailsStorage.add(details);
 
   // Write to log file
+  const resolvedKey = apiKey || req.api_key;
   const logEntry = {
     type: "request_end",
     timestamp: Date.now() / 1000,
@@ -135,7 +137,8 @@ export function logRequestEnd(
     output_tokens: outputTokens,
     error,
     params: req.params || {},
-    api_key: maskKey(apiKey || req.api_key),
+    key_name: apiKeyManager.getKeyName(resolvedKey),
+    api_key: maskKey(resolvedKey),
   };
   logManager.writeRequestLog(logEntry);
 

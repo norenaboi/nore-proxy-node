@@ -875,8 +875,10 @@
             }
 
             // Logout
-            function logout() {
-                sessionStorage.removeItem("adminMasterKey");
+            async function logout() {
+                await fetch("/admin/logout", { method: "POST" }).catch(
+                    () => {},
+                );
                 window.location.href = "/admin/login";
             }
 
@@ -895,18 +897,9 @@
 
             // Load all keys
             async function loadKeys() {
-                const MASTER_KEY = sessionStorage.getItem("adminMasterKey");
-                if (!MASTER_KEY) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
-
                 try {
                     const response = await fetch("/api/keys", {
                         method: "GET",
-                        headers: {
-                            Authorization: MASTER_KEY,
-                        },
                     });
 
                     if (!response.ok) {
@@ -1005,12 +998,6 @@
 
             // Add new key
             async function addKey() {
-                const MASTER_KEY = sessionStorage.getItem("adminMasterKey");
-                if (!MASTER_KEY) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
-
                 const name = document.getElementById("newKeyName").value.trim();
                 const apiKey = document
                     .getElementById("newApiKey")
@@ -1034,7 +1021,6 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: MASTER_KEY,
                         },
                         body: JSON.stringify({ api_key: apiKey, name: name }),
                     });
@@ -1103,12 +1089,6 @@
 
             // Save key name
             async function saveKey(apiKey) {
-                const MASTER_KEY = sessionStorage.getItem("adminMasterKey");
-                if (!MASTER_KEY) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
-
                 const row = document.getElementById(`key-row-${apiKey}`);
                 const nameInput = row.querySelector(".edit-name");
                 const rpdInput = row.querySelector(".edit-rpd");
@@ -1128,7 +1108,6 @@
                         method: "PUT",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: MASTER_KEY,
                         },
                         body: JSON.stringify({
                             name: newName,
@@ -1160,12 +1139,6 @@
 
             // Delete key
             async function deleteKey(apiKey, name) {
-                const MASTER_KEY = sessionStorage.getItem("adminMasterKey");
-                if (!MASTER_KEY) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
-
                 if (
                     !confirm(
                         `Are you sure you want to delete the key "${name}"? This action cannot be undone.`,
@@ -1179,7 +1152,6 @@
                         method: "DELETE",
                         headers: {
                             "Content-Type": "application/json",
-                            Authorization: MASTER_KEY,
                         },
                         body: JSON.stringify({ api_key: apiKey }),
                     });
@@ -1205,18 +1177,9 @@
             }
 
             async function reloadConfig() {
-                const MASTER_KEY = sessionStorage.getItem("adminMasterKey");
-                if (!MASTER_KEY) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
-
                 try {
                     const response = await fetch("/api/reload", {
                         method: "POST",
-                        headers: {
-                            Authorization: MASTER_KEY,
-                        },
                     });
 
                     const data = await response.json();

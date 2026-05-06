@@ -2,13 +2,15 @@ import express from "express";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { verifyMasterKey } from "../middleware/auth.js";
+import { verifySession } from "../middleware/auth.js";
 import { adminRateLimit } from "../middleware/rateLimiter.js";
 import apiKeyManager from "../services/apiKeyManager.js";
 import logManager from "../services/logManager.js";
 import Config from "../config/index.js";
 import { loadModelsFromFile } from "../utils/helpers.js";
 import settingsManager from "../services/settingsManager.js";
+import crypto from "crypto";
+import { createSession, deleteSession } from "../services/sessionManager.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,12 +20,47 @@ const router = express.Router();
 // Apply IP-level rate limiting to all admin routes to limit brute-force attempts
 router.use(adminRateLimit);
 
+// POST /admin/login — validate master key and issue a session cookie
+router.post("/admin/login", (req, res) => {
+  const provided = (req.body.masterKey || "").toString();
+  const expected = Config.MASTER_KEY;
+  let valid = false;
+  try {
+    valid =
+      provided.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  } catch (_) {}
+
+  if (!valid) {
+    return res.status(403).json({ error: "Invalid master key" });
+  }
+
+  const sessionId = createSession();
+  const isProduction = process.env.NODE_ENV === "production";
+  res.cookie("adminSession", sessionId, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "strict",
+    maxAge:
+      parseInt(process.env.SESSION_TTL_HOURS || "24", 10) * 60 * 60 * 1000,
+  });
+  res.json({ success: true });
+});
+
+// POST /admin/logout — delete the session and clear the cookie
+router.post("/admin/logout", (req, res) => {
+  const sessionId = req.cookies?.adminSession;
+  deleteSession(sessionId);
+  res.clearCookie("adminSession", { httpOnly: true, sameSite: "strict" });
+  res.json({ success: true });
+});
+
 /*
     GET for logs in database
 */
 
 // Get logs
-router.get("/api/logs", verifyMasterKey, async (req, res) => {
+router.get("/api/logs", verifySession, async (req, res) => {
   const allApiKeys = apiKeyManager.keys;
   const dashboardData = [];
 
@@ -55,7 +92,8 @@ router.get("/api/logs", verifyMasterKey, async (req, res) => {
         timestamp: log.timestamp || 0,
         request_id: log.request_id || "",
         name:
-          apiKey !== "Unknown" ? apiKeyManager.getKeyName(apiKey) : "Unknown",
+          log.key_name ||
+          (apiKey !== "Unknown" ? apiKeyManager.getKeyName(apiKey) : "Unknown"),
         api_key: apiKey.length > 5 ? apiKey.substring(0, 5) + "..." : apiKey,
         model: log.model || "Unknown",
         input_tokens: log.input_tokens || 0,
@@ -101,7 +139,7 @@ router.get("/api/logs", verifyMasterKey, async (req, res) => {
 */
 
 // Get all API keys
-router.get("/api/keys", verifyMasterKey, async (req, res) => {
+router.get("/api/keys", verifySession, async (req, res) => {
   try {
     const keys = apiKeyManager.getKeys();
     res.json({ keys });
@@ -112,7 +150,7 @@ router.get("/api/keys", verifyMasterKey, async (req, res) => {
 });
 
 // Add new API key
-router.post("/api/keys", verifyMasterKey, async (req, res) => {
+router.post("/api/keys", verifySession, async (req, res) => {
   try {
     const apiKey = (req.body.api_key || "").trim();
     const name = (req.body.name || "").trim();
@@ -136,7 +174,7 @@ router.post("/api/keys", verifyMasterKey, async (req, res) => {
 });
 
 // Update API key
-router.put("/api/keys", verifyMasterKey, async (req, res) => {
+router.put("/api/keys", verifySession, async (req, res) => {
   try {
     const newName = (req.body.name || "").trim();
     const apiKey = (req.body.api_key || "").trim();
@@ -159,7 +197,7 @@ router.put("/api/keys", verifyMasterKey, async (req, res) => {
 });
 
 // Delete API key
-router.delete("/api/keys", verifyMasterKey, async (req, res) => {
+router.delete("/api/keys", verifySession, async (req, res) => {
   try {
     const apiKey = (req.body.api_key || "").trim();
 
@@ -178,7 +216,7 @@ router.delete("/api/keys", verifyMasterKey, async (req, res) => {
 */
 
 // Get all models
-router.get("/api/models", verifyMasterKey, async (req, res) => {
+router.get("/api/models", verifySession, async (req, res) => {
   try {
     const modelsPath = path.join(__dirname, "../allowed_models.txt");
     const content = fs.existsSync(modelsPath)
@@ -195,7 +233,7 @@ router.get("/api/models", verifyMasterKey, async (req, res) => {
 });
 
 // Add model
-router.post("/api/models", verifyMasterKey, async (req, res) => {
+router.post("/api/models", verifySession, async (req, res) => {
   try {
     const model = (req.body.model || "").trim();
     if (!model) return res.status(400).json({ error: "Model name required" });
@@ -219,7 +257,7 @@ router.post("/api/models", verifyMasterKey, async (req, res) => {
 });
 
 // Update model
-router.put("/api/models", verifyMasterKey, async (req, res) => {
+router.put("/api/models", verifySession, async (req, res) => {
   try {
     const oldModel = (req.body.oldModel || "").replace(/\r/g, "").trim();
     const newModel = (req.body.newModel || "").replace(/\r/g, "").trim();
@@ -244,7 +282,7 @@ router.put("/api/models", verifyMasterKey, async (req, res) => {
 });
 
 // Delete model
-router.delete("/api/models", verifyMasterKey, async (req, res) => {
+router.delete("/api/models", verifySession, async (req, res) => {
   try {
     const model = (req.body.model || "").replace(/\r/g, "").trim();
     if (!model) return res.status(400).json({ error: "Model name required" });
@@ -269,7 +307,7 @@ router.delete("/api/models", verifyMasterKey, async (req, res) => {
 */
 
 // Get all endpoints
-router.get("/api/endpoints", verifyMasterKey, async (req, res) => {
+router.get("/api/endpoints", verifySession, async (req, res) => {
   try {
     const endpointsPath = path.join(__dirname, "../endpoints.txt");
     const content = fs.existsSync(endpointsPath)
@@ -304,7 +342,7 @@ router.get("/api/endpoints", verifyMasterKey, async (req, res) => {
 });
 
 // Add endpoint
-router.post("/api/endpoints", verifyMasterKey, async (req, res) => {
+router.post("/api/endpoints", verifySession, async (req, res) => {
   try {
     const url = (req.body.url || "").trim();
     const token = (req.body.token || "").trim();
@@ -348,7 +386,7 @@ router.post("/api/endpoints", verifyMasterKey, async (req, res) => {
 });
 
 // Update endpoint
-router.put("/api/endpoints", verifyMasterKey, async (req, res) => {
+router.put("/api/endpoints", verifySession, async (req, res) => {
   try {
     const index = req.body.index;
     const url = (req.body.url || "").trim();
@@ -400,7 +438,7 @@ router.put("/api/endpoints", verifyMasterKey, async (req, res) => {
 });
 
 // Delete endpoint
-router.delete("/api/endpoints", verifyMasterKey, async (req, res) => {
+router.delete("/api/endpoints", verifySession, async (req, res) => {
   try {
     const index = req.body.index;
     if (!index) return res.status(400).json({ error: "Index required" });
@@ -442,7 +480,7 @@ router.delete("/api/endpoints", verifyMasterKey, async (req, res) => {
 */
 
 // Get all settings
-router.get("/api/settings", verifyMasterKey, (req, res) => {
+router.get("/api/settings", verifySession, (req, res) => {
   try {
     res.json({ settings: settingsManager.getAll() });
   } catch (error) {
@@ -452,7 +490,7 @@ router.get("/api/settings", verifyMasterKey, (req, res) => {
 });
 
 // Update settings
-router.put("/api/settings", verifyMasterKey, (req, res) => {
+router.put("/api/settings", verifySession, (req, res) => {
   try {
     const updates = req.body;
     if (!updates || typeof updates !== "object" || Array.isArray(updates)) {
@@ -471,7 +509,7 @@ router.put("/api/settings", verifyMasterKey, (req, res) => {
 });
 
 // Reload configuration
-router.post("/api/reload", verifyMasterKey, async (req, res) => {
+router.post("/api/reload", verifySession, async (req, res) => {
   Config.reload();
   apiKeyManager.loadKeys();
   loadModelsFromFile();

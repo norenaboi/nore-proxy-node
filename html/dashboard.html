@@ -718,22 +718,16 @@
 
         <script>
             async function loadDashboard() {
-                const masterKey = sessionStorage.getItem("adminMasterKey");
-                if (!masterKey) {
-                    window.location.href = "/admin/login";
-                    return;
-                }
-
                 try {
-                    const response = await fetch("/api/logs", {
-                        headers: {
-                            Authorization: masterKey,
-                        },
-                    });
+                    const response = await fetch("/api/logs");
 
                     if (!response.ok) {
-                        if (response.status === 403) {
-                            throw new Error("Invalid master key");
+                        if (
+                            response.status === 401 ||
+                            response.status === 403
+                        ) {
+                            window.location.href = "/admin/login";
+                            return;
                         }
                         throw new Error("Failed to load dashboard");
                     }
@@ -810,17 +804,13 @@
                     document.getElementById("error").style.display = "block";
                     document.getElementById("error").textContent =
                         error.message;
-
-                    if (error.message === "Invalid master key") {
-                        setTimeout(() => {
-                            window.location.href = "/admin/login";
-                        }, 2000);
-                    }
                 }
             }
 
-            function logout() {
-                sessionStorage.removeItem("adminMasterKey");
+            async function logout() {
+                await fetch("/admin/logout", { method: "POST" }).catch(
+                    () => {},
+                );
                 window.location.href = "/admin/login";
             }
 

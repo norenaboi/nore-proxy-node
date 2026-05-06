@@ -61,6 +61,22 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 app.use(express.json({ limit: "8mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Parse cookies without an extra dependency
+app.use((req, _res, next) => {
+  req.cookies = {};
+  const header = req.headers.cookie;
+  if (header) {
+    for (const part of header.split(";")) {
+      const idx = part.indexOf("=");
+      if (idx < 0) continue;
+      req.cookies[part.slice(0, idx).trim()] = decodeURIComponent(
+        part.slice(idx + 1).trim(),
+      );
+    }
+  }
+  next();
+});
+
 // Global state
 let SHUTTING_DOWN = false;
 const startupTime = Date.now() / 1000;

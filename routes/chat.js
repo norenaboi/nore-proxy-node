@@ -51,7 +51,7 @@ router.post("/v1/chat/completions", verifyApiKey, async (req, res) => {
   }
 
   // Remove unwanted parameters
-  const paramsToExclude = ["frequency_penalty", "presence_penalty", "top_p"];
+  const paramsToExclude = ["frequency_penalty", "presence_penalty"];
   for (const param of paramsToExclude) {
     delete openaiReq[param];
   }
@@ -159,6 +159,8 @@ async function streamFromBackend(
       stream: true,
       messages,
       max_tokens: openaiReq.max_tokens,
+      temperature: openaiReq.temperature,
+      top_p: openaiReq.top_p,
       tools: openaiReq.tools,
       tool_choice: openaiReq.tool_choice,
     };
@@ -333,6 +335,8 @@ async function makeBackendRequest(
       stream: false,
       messages,
       max_tokens: openaiReq.max_tokens,
+      temperature: openaiReq.temperature,
+      top_p: openaiReq.top_p,
       tools: openaiReq.tools,
       tool_choice: openaiReq.tool_choice,
     };

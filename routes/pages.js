@@ -42,6 +42,11 @@ function serveHtml(res, filename) {
   }
 }
 
+router.get("/favicon.ico", (req, res) => {
+  const faviconPath = path.join(__dirname, "..", "html", "favicon.ico");
+  res.sendFile(faviconPath);
+});
+
 router.get("/", (req, res) => {
   serveHtml(res, "index.html");
 });

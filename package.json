@@ -5,6 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
+    "dev": "nodemon --ext ts,html,css",
     "start": "node server.js"
   },
   "dependencies": {
@@ -16,5 +17,8 @@
     "helmet": "^8.1.0",
     "prom-client": "^15.1.0",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }

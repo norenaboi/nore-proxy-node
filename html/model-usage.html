@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <title>Model Usage - Admin Panel</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            :root {
+                --primary: #6366f1;
+                --primary-dark: #4f46e5;
+                --primary-light: #a5b4fc;
+                --success: #10b981;
+                --warning: #f59e0b;
+                --danger: #ef4444;
+                --dark: #1e1b4b;
+                --gray-50: #f8fafc;
+                --gray-100: #f1f5f9;
+                --gray-200: #e2e8f0;
+                --gray-300: #cbd5e1;
+                --gray-400: #94a3b8;
+                --gray-500: #64748b;
+                --gray-600: #475569;
+                --gray-700: #334155;
+                --gray-800: #1e293b;
+                --gray-900: #0f172a;
+                --card-shadow:
+                    0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+                --card-shadow-hover: 0 10px 40px rgba(0, 0, 0, 0.1);
+            }
+
+            body {
+                font-family:
+                    "Inter",
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    sans-serif;
+                background: var(--gray-300);
+                min-height: 100vh;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 260px;
+                background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                z-index: 100;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 40px;
+            }
+
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                background: linear-gradient(
+                    135deg,
+                    var(--primary) 0%,
+                    #8b5cf6 100%
+                );
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .logo-icon svg {
+                width: 24px;
+                height: 24px;
+                fill: white;
+            }
+
+            .logo-text {
+                color: white;
+                font-size: 20px;
+                font-weight: 700;
+            }
+
+            .nav-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                flex: 1;
+            }
+
+            .nav-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                color: var(--gray-400);
+                text-decoration: none;
+                transition: all 0.2s ease;
+                cursor: pointer;
+            }
+
+            .nav-item:hover {
+                background: rgba(255, 255, 255, 0.05);
+                color: white;
+            }
+
+            .nav-item.active {
+                background: linear-gradient(
+                    135deg,
+                    var(--primary) 0%,
+                    #8b5cf6 100%
+                );
+                color: white;
+            }
+
+            .nav-item svg {
+                width: 20px;
+                height: 20px;
+                fill: currentColor;
+            }
+
+            .logout {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                color: var(--danger);
+                text-decoration: none;
+                transition: all 0.2s ease;
+                cursor: pointer;
+                border: none;
+                background: rgba(239, 68, 68, 0.1);
+                font-size: 14px;
+                font-family: inherit;
+                width: 100%;
+            }
+
+            .logout:hover {
+                background: rgba(239, 68, 68, 0.2);
+            }
+
+            .logout svg {
+                width: 20px;
+                height: 20px;
+                fill: currentColor;
+            }
+
+            .main-content {
+                margin-left: 260px;
+                padding: 32px;
+                min-height: 100vh;
+            }
+
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 32px;
+            }
+
+            h1 {
+                color: var(--gray-900);
+                font-size: 28px;
+                font-weight: 700;
+            }
+
+            .stats-overview {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-bottom: 32px;
+            }
+
+            .stat-card {
+                background: white;
+                border-radius: 16px;
+                padding: 24px;
+                box-shadow: var(--card-shadow);
+                transition: all 0.3s ease;
+            }
+
+            .stat-card h3 {
+                color: var(--gray-500);
+                font-size: 13px;
+                font-weight: 500;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 8px;
+            }
+
+            .stat-card .value {
+                font-size: 32px;
+                font-weight: 700;
+                color: var(--gray-900);
+                line-height: 1;
+            }
+
+            .models-table-card {
+                background: white;
+                border-radius: 16px;
+                box-shadow: var(--card-shadow);
+                overflow: hidden;
+            }
+
+            .table-header {
+                padding: 20px 24px;
+                border-bottom: 1px solid var(--gray-200);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .table-header h2 {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--gray-800);
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th {
+                background: var(--gray-50);
+                padding: 14px 20px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 12px;
+                color: var(--gray-500);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid var(--gray-200);
+            }
+
+            th.sortable {
+                cursor: pointer;
+                user-select: none;
+            }
+
+            th.sortable:hover {
+                color: var(--gray-700);
+            }
+
+            th.sortable::after {
+                content: " ⇅";
+                opacity: 0.3;
+            }
+
+            th.sortable.sorted-asc::after {
+                content: " ↑";
+                opacity: 1;
+            }
+
+            th.sortable.sorted-desc::after {
+                content: " ↓";
+                opacity: 1;
+            }
+
+            td {
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--gray-100);
+                font-size: 14px;
+                color: var(--gray-700);
+            }
+
+            tr:hover {
+                background: var(--gray-50);
+            }
+
+            .rank-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                font-weight: 600;
+                font-size: 0.875rem;
+            }
+
+            .rank-badge.top-1 {
+                background: linear-gradient(135deg, #ffd700, #ffed4e);
+                color: #000;
+            }
+
+            .rank-badge.top-2 {
+                background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+                color: #000;
+            }
+
+            .rank-badge.top-3 {
+                background: linear-gradient(135deg, #cd7f32, #e8a87c);
+                color: #000;
+            }
+
+            .rank-badge.other {
+                background: var(--gray-100);
+                color: var(--gray-600);
+            }
+
+            .model-name {
+                font-weight: 600;
+                font-size: 14px;
+                color: var(--gray-800);
+            }
+
+            .usage-bar {
+                width: 100%;
+                height: 8px;
+                background: var(--gray-200);
+                border-radius: 4px;
+                overflow: hidden;
+                margin-top: 8px;
+            }
+
+            .usage-bar-fill {
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    var(--primary),
+                    var(--primary-dark)
+                );
+                border-radius: 4px;
+                transition: width 0.3s ease;
+            }
+
+            .metric-value {
+                font-family: monospace;
+                font-weight: 600;
+                font-size: 14px;
+                font-variant-numeric: tabular-nums;
+            }
+
+            .metric-value.requests {
+                color: var(--primary);
+            }
+
+            .metric-value.tokens {
+                color: var(--success);
+            }
+
+            .metric-value.errors {
+                color: var(--danger);
+            }
+
+            .loading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 80px;
+                color: var(--gray-600);
+            }
+
+            .loading-spinner {
+                width: 48px;
+                height: 48px;
+                border: 4px solid var(--gray-200);
+                border-top-color: var(--primary);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 16px;
+            }
+
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 48px 24px;
+                color: var(--gray-400);
+            }
+
+            .empty-state i {
+                font-size: 48px;
+                margin-bottom: 16px;
+                color: var(--gray-300);
+            }
+
+            @media (max-width: 1024px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                }
+                .main-content {
+                    margin-left: 0;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .main-content {
+                    padding: 20px;
+                }
+                table {
+                    display: block;
+                    overflow-x: auto;
+                    font-size: 13px;
+                }
+                th,
+                td {
+                    padding: 12px 16px;
+                }
+            }
+
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: var(--gray-100);
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--gray-300);
+                border-radius: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--gray-400);
+            }
+        </style>
+    </head>
+    <body>
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fa-brands fa-square-web-awesome-stroke"></i>
+                </div>
+                <span class="logo-text">Admin Panel</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a class="nav-item" href="/admin/dashboard">
+                    <i class="fa-brands fa-quinscape"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item" href="/admin/users">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Users</span>
+                </a>
+                <a class="nav-item active">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Model Usage</span>
+                </a>
+                <a class="nav-item" href="/admin/keys">
+                    <i class="fa-solid fa-key"></i>
+                    <span>API Keys</span>
+                </a>
+                <a class="nav-item" href="/admin/endpoints">
+                    <i class="fa-solid fa-hexagon-nodes"></i>
+                    <span>Endpoints</span>
+                </a>
+                <a class="nav-item" href="/admin/models">
+                    <i class="fa-solid fa-comment-nodes"></i>
+                    <span>Models</span>
+                </a>
+                <a class="nav-item" href="/admin/settings">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <button class="logout" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>Model Usage Statistics</h1>
+            </header>
+
+            <div class="loading" id="loading">
+                <div class="loading-spinner"></div>
+            </div>
+
+            <div id="content" style="display: none">
+                <div class="stats-overview">
+                    <div class="stat-card">
+                        <h3>Total Models</h3>
+                        <div class="value" id="totalModels">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Requests</h3>
+                        <div class="value" id="totalRequests">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Tokens</h3>
+                        <div class="value" id="totalTokens">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Errors</h3>
+                        <div class="value" id="totalErrors">0</div>
+                    </div>
+                </div>
+
+                <div class="models-table-card">
+                    <div class="table-header">
+                        <h2>
+                            <i class="fa-solid fa-chart-bar"></i> Models by
+                            Usage
+                        </h2>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 60px">Rank</th>
+                                <th
+                                    class="sortable sorted-desc"
+                                    onclick="sortTable('model')"
+                                >
+                                    Model
+                                </th>
+                                <th
+                                    class="sortable"
+                                    onclick="sortTable('requests')"
+                                >
+                                    Requests
+                                </th>
+                                <th
+                                    class="sortable"
+                                    onclick="sortTable('tokens')"
+                                >
+                                    Total Tokens
+                                </th>
+                                <th
+                                    class="sortable"
+                                    onclick="sortTable('errors')"
+                                >
+                                    Errors
+                                </th>
+                                <th style="width: 200px">Usage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modelsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            let modelsData = [];
+            let sortColumn = "requests";
+            let sortDirection = "desc";
+
+            async function logout() {
+                await fetch("/admin/logout", { method: "POST" });
+                window.location.href = "/admin/login";
+            }
+
+            async function loadModelUsage() {
+                try {
+                    const response = await fetch("/api/model-usage");
+                    const data = await response.json();
+
+                    modelsData = data.models;
+                    updateStats(data);
+                    sortAndRenderTable();
+
+                    document.getElementById("loading").style.display = "none";
+                    document.getElementById("content").style.display = "block";
+                } catch (error) {
+                    console.error("Error loading model usage:", error);
+                    document.getElementById("loading").innerHTML =
+                        '<div class="empty-state"><i class="fa-solid fa-exclamation-triangle"></i><p>Error loading model usage</p></div>';
+                }
+            }
+
+            function updateStats(data) {
+                document.getElementById("totalModels").textContent =
+                    data.total_models.toLocaleString();
+                document.getElementById("totalRequests").textContent =
+                    data.total_requests.toLocaleString();
+                document.getElementById("totalTokens").textContent =
+                    formatNumber(data.total_tokens);
+                document.getElementById("totalErrors").textContent =
+                    data.total_errors.toLocaleString();
+            }
+
+            function sortTable(column) {
+                if (sortColumn === column) {
+                    sortDirection = sortDirection === "asc" ? "desc" : "asc";
+                } else {
+                    sortColumn = column;
+                    sortDirection = "desc";
+                }
+
+                // Update header classes
+                document.querySelectorAll("th.sortable").forEach((th) => {
+                    th.classList.remove("sorted-asc", "sorted-desc");
+                });
+
+                const header = event.target;
+                header.classList.add(
+                    sortDirection === "asc" ? "sorted-asc" : "sorted-desc",
+                );
+
+                sortAndRenderTable();
+            }
+
+            function sortAndRenderTable() {
+                // Sort the data
+                const sorted = [...modelsData].sort((a, b) => {
+                    let aVal, bVal;
+
+                    switch (sortColumn) {
+                        case "model":
+                            aVal = a.model;
+                            bVal = b.model;
+                            break;
+                        case "requests":
+                            aVal = a.requests;
+                            bVal = b.requests;
+                            break;
+                        case "tokens":
+                            aVal = a.tokens;
+                            bVal = b.tokens;
+                            break;
+                        case "errors":
+                            aVal = a.errors;
+                            bVal = b.errors;
+                            break;
+                        default:
+                            aVal = a.requests;
+                            bVal = b.requests;
+                    }
+
+                    if (sortColumn === "model") {
+                        return sortDirection === "asc"
+                            ? aVal.localeCompare(bVal)
+                            : bVal.localeCompare(aVal);
+                    } else {
+                        return sortDirection === "asc"
+                            ? aVal - bVal
+                            : bVal - aVal;
+                    }
+                });
+
+                renderTable(sorted);
+            }
+
+            function renderTable(models) {
+                const tbody = document.getElementById("modelsTableBody");
+
+                if (models.length === 0) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="6" class="empty-state"><i class="fa-solid fa-inbox"></i><p>No model usage data available</p></td></tr>';
+                    return;
+                }
+
+                // Calculate max for usage bar
+                const maxRequests = Math.max(...models.map((m) => m.requests));
+
+                tbody.innerHTML = models
+                    .map((model, index) => {
+                        const rank = index + 1;
+                        const rankClass =
+                            rank === 1
+                                ? "top-1"
+                                : rank === 2
+                                  ? "top-2"
+                                  : rank === 3
+                                    ? "top-3"
+                                    : "other";
+                        const usagePercent =
+                            maxRequests > 0
+                                ? (model.requests / maxRequests) * 100
+                                : 0;
+
+                        return `
+                        <tr>
+                            <td>
+                                <div class="rank-badge ${rankClass}">${rank}</div>
+                            </td>
+                            <td>
+                                <div class="model-name">${escapeHtml(model.model)}</div>
+                            </td>
+                            <td>
+                                <span class="metric-value requests">${model.requests.toLocaleString()}</span>
+                            </td>
+                            <td>
+                                <span class="metric-value tokens">${formatNumber(model.tokens)}</span>
+                            </td>
+                            <td>
+                                <span class="metric-value errors">${model.errors.toLocaleString()}</span>
+                            </td>
+                            <td>
+                                <div class="usage-bar">
+                                    <div class="usage-bar-fill" style="width: ${usagePercent}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    })
+                    .join("");
+            }
+
+            function formatNumber(num) {
+                if (num >= 1000000000) {
+                    return (num / 1000000000).toFixed(1) + "B";
+                } else if (num >= 1000000) {
+                    return (num / 1000000).toFixed(1) + "M";
+                } else if (num >= 1000) {
+                    return (num / 1000).toFixed(1) + "K";
+                }
+                return num.toLocaleString();
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Load model usage on page load
+            loadModelUsage();
+        </script>
+    </body>
+</html>

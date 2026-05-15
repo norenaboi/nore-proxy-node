@@ -9,6 +9,7 @@ import logManager from "../services/logManager.js";
 import Config from "../config/index.js";
 import { loadModelsFromFile } from "../utils/helpers.js";
 import settingsManager from "../services/settingsManager.js";
+import realtimeStats from "../services/realtimeStats.js";
 import crypto from "crypto";
 import { createSession, deleteSession } from "../services/sessionManager.js";
 
@@ -520,6 +521,149 @@ router.post("/api/reload", verifySession, async (req, res) => {
     status: "success",
     message: "Configuration, keys, models and settings reloaded.",
   });
+});
+
+/*
+    GET for users list and individual user details
+*/
+
+// Get all users (API keys with usage stats)
+router.get("/api/users", verifySession, async (req, res) => {
+  try {
+    const allApiKeys = apiKeyManager.keys;
+    const users = [];
+
+    for (const apiKey of Object.keys(allApiKeys)) {
+      const stats = apiKeyManager.getUsageStats(apiKey);
+      users.push({
+        name: stats.name || "Unnamed",
+        api_key: apiKey.length > 5 ? apiKey.substring(0, 5) + "..." : apiKey,
+        active: stats.active,
+        daily_requests: stats.daily_requests || 0,
+        total_requests: stats.total_requests || 0,
+        total_input_tokens: stats.total_input_tokens || 0,
+        total_output_tokens: stats.total_output_tokens || 0,
+        daily_input_tokens: stats.daily_input_tokens || 0,
+        daily_output_tokens: stats.daily_output_tokens || 0,
+      });
+    }
+
+    // Sort by total requests descending
+    users.sort((a, b) => b.total_requests - a.total_requests);
+
+    res.json({ users });
+  } catch (error) {
+    console.error("Error loading users:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get individual user details with recent requests
+router.get("/api/users/:apiKey", verifySession, async (req, res) => {
+  try {
+    const apiKey = req.params.apiKey;
+
+    // Find the full API key from the masked version
+    const allApiKeys = Object.keys(apiKeyManager.keys);
+    const fullApiKey = allApiKeys.find((key) => {
+      const masked = key.length > 5 ? key.substring(0, 5) + "..." : key;
+      return masked === apiKey;
+    });
+
+    if (!fullApiKey) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const stats = apiKeyManager.getUsageStats(fullApiKey);
+    const logs = logManager.readRequestLogs(1000);
+
+    // Get masked key for log filtering
+    const maskedKey =
+      fullApiKey.length > 8
+        ? fullApiKey.substring(0, 5) +
+          "..." +
+          fullApiKey.substring(fullApiKey.length - 3)
+        : "****";
+
+    // Filter logs for this user
+    const userLogs = logs
+      .filter(
+        (log) =>
+          log.api_key === maskedKey &&
+          log.type === "request_end" &&
+          log.status === "success",
+      )
+      .map((log) => ({
+        timestamp: log.timestamp || 0,
+        model: log.model || "Unknown",
+        input_tokens: log.input_tokens || 0,
+        output_tokens: log.output_tokens || 0,
+        total_tokens: (log.input_tokens || 0) + (log.output_tokens || 0),
+        duration: log.duration || 0,
+      }))
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 50);
+
+    res.json({
+      name: stats.name || "Unnamed",
+      api_key: apiKey,
+      active: stats.active,
+      daily_requests: stats.daily_requests || 0,
+      total_requests: stats.total_requests || 0,
+      total_input_tokens: stats.total_input_tokens || 0,
+      total_output_tokens: stats.total_output_tokens || 0,
+      daily_input_tokens: stats.daily_input_tokens || 0,
+      daily_output_tokens: stats.daily_output_tokens || 0,
+      recent_requests: userLogs,
+    });
+  } catch (error) {
+    console.error("Error loading user details:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+/*
+    GET for model usage statistics
+*/
+
+// Get model usage statistics
+router.get("/api/model-usage", verifySession, async (req, res) => {
+  try {
+    const modelUsageMap = realtimeStats.modelUsage;
+    const models = [];
+
+    // Convert Map to array
+    for (const [modelName, stats] of modelUsageMap.entries()) {
+      models.push({
+        model: modelName,
+        requests: stats.requests || 0,
+        tokens: stats.tokens || 0,
+        errors: stats.errors || 0,
+      });
+    }
+
+    // Sort by total tokens descending (you can change this to requests if preferred)
+    models.sort((a, b) => b.tokens - a.tokens);
+
+    // Calculate totals
+    const totals = models.reduce(
+      (acc, model) => ({
+        total_models: acc.total_models + 1,
+        total_requests: acc.total_requests + model.requests,
+        total_tokens: acc.total_tokens + model.tokens,
+        total_errors: acc.total_errors + model.errors,
+      }),
+      { total_models: 0, total_requests: 0, total_tokens: 0, total_errors: 0 },
+    );
+
+    res.json({
+      ...totals,
+      models,
+    });
+  } catch (error) {
+    console.error("Error loading model usage:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 export default router;

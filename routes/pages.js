@@ -105,4 +105,12 @@ router.get("/admin/settings", requireSession, (req, res) => {
   serveHtml(res, "settings.html");
 });
 
+router.get("/admin/users", requireSession, (req, res) => {
+  serveHtml(res, "users.html");
+});
+
+router.get("/admin/model-usage", requireSession, (req, res) => {
+  serveHtml(res, "model-usage.html");
+});
+
 export default router;
